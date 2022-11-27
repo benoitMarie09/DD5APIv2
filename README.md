@@ -80,7 +80,7 @@ Les outils:
 
 info barbare en json:
 
-> `http://127.0.0.1:8000/api/classe/barbare//?format=json`
+> `http://127.0.0.1:8000/api/classe/barbare/?format=json`
 
 info toutes les competences en json:
 
