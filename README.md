@@ -2,7 +2,7 @@
 
 API en français pour le jeu de rôle Donjon Dragon édition 5
 
-## Instalation
+## Installation
 
 cloner le repo :
 
