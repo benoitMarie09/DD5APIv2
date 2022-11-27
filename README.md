@@ -42,26 +42,28 @@ Dans le dossier src lancer le serveur:
 
 Avec adresse local
 
-Les classes:
-http://127.0.0.1:8000/api/classe
+Les classes:  
+http://127.0.0.1:8000/api/classe/<pk>
 
-Les races:
-http://127.0.0.1:8000/race
+Les races:  
+http://127.0.0.1:8000/race/<pk>
 
-Les historiques:
-http://127.0.0.1:8000/historique
+Les historiques:  
+http://127.0.0.1:8000/historique/<pk>
 
-Les compétences:
-http://127.0.0.1:8000/competence
+Les compétences:  
+http://127.0.0.1:8000/competence/<pk>
 
-L'equipement:
-http://127.0.0.1:8000/equipement
+L'equipement:  
+http://127.0.0.1:8000/equipement/<pk>
 
-Les armes:
-http://127.0.0.1:8000/equipement/arme
+Les armes:  
+http://127.0.0.1:8000/equipement/arme/\<pk\>
 
-Les armures:
-http://127.0.0.1:8000/equipement/armure
+Les armures:  
+http://127.0.0.1:8000/equipement/armure/<pk>
 
-Les outils:
-http://127.0.0.1:8000/equipement/outil
+Les outils:  
+http://127.0.0.1:8000/equipement/outil/<pk>
+
+_Ajouter `/?format=json` pour avoir un json._
