@@ -6,35 +6,35 @@ API en français pour le jeu de rôle Donjon Dragon édition 5
 
 cloner le repo :
 
-'''console
+```console
 git clone https://github.com/benoitMarie09/DD5API.git
-'''
+```
 
 À la racine du depot DD5API créer un environement virtuel:
 
-'''console
+```console
 DD5API$ python3 -m venv .env
-'''
+```
 
 DD5API$ Activer l'environement virtuel:
 
-'''console
+```console
 DD5API$ source .env/bin/activate
-'''
+```
 
 DD5API$ Installer les dépendances:
 
-'''console
+```console
 DD5API$ pip install -r requirement.txt
-'''
+```
 
 ## Lancer l'API
 
 Dans le dossier src lancer le serveur:
 
-'''console
+```console
 DD5API/src$ python3 manage.py runserver
-'''
+```
 
 ## Mode d'emploi
 
