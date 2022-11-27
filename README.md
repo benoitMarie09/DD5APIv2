@@ -74,4 +74,4 @@ Les outils:
 
 > `http://127.0.0.1:8000/equipement/outil/<pk>`
 
-_Ajouter `/?format=json` pour avoir un json._
+**Ajouter `/?format=json` pour avoir un json.**
