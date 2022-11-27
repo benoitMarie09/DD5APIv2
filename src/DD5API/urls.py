@@ -1,31 +1,23 @@
-"""DD5API URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.1/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework import routers
 from data.views import *
+
+router = routers.SimpleRouter()
+
+router.register('historique', HistoriqueViewset, basename='historique')
+router.register('equipement', EquipementViewset, basename='equipement')
+router.register('arme', ArmeViewset, basename='arme')
+router.register('armure', ArmureViewset, basename='armure')
+router.register('outil', OutilViewset, basename='outil')
+router.register('race', RaceViewset, basename='race')
+router.register('competence', CompetenceViewset, basename='competence')
+router.register('classe', ClasseViewset, basename='classe')
+
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
-    path('api/historique/', HistoriqueAPIView.as_view()),
-    path('api/equipement/', EquipementAPIView.as_view()),
-    path('api/equipement/arme/', ArmeAPIView.as_view()),
-    path('api/equipement/armure', ArmureAPIView.as_view()),
-    path('api/equipement/outil', OutilAPIView.as_view()),
-    path('api/race/', RaceAPIView.as_view()),
-    path('api/competence/', CompetenceAPIView.as_view()),
-    path('api/classe/', ClasseAPIView.as_view()),
+    path('api/', include(router.urls)),
 ]
