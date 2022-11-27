@@ -75,3 +75,13 @@ Les outils:
 > `http://127.0.0.1:8000/equipement/outil/<pk>`
 
 **Ajouter `/?format=json` pour avoir un json.**
+
+## Exemples
+
+info barbare en json:
+
+> `http://127.0.0.1:8000/api/classe/barbare//?format=json`
+
+info toutes les competences en json:
+
+> `http://127.0.0.1:8000/competence/?format=json`
