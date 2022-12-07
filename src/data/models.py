@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib import admin
 from django.utils.text import slugify
+from django.urls import reverse
+from model_utils.managers import InheritanceManager 
+
 
 ### Model de reference
 class BaseModel(models.Model):
@@ -25,27 +28,26 @@ class Race(BaseModel):
          decimal_places=1, max_digits=4, null=True, blank=True)
     taille = models.ForeignKey('Taille',null=True,blank=True,related_name='Race',on_delete=models.CASCADE)
     taille_details = models.TextField(null=True, blank=True)
+    age = models.TextField(null=True, blank=True)
+    poids = models.TextField(null=True, blank=True)
     bonus_caracteristique = models.ManyToManyField('Caracteristique',blank=True,through='ValeurCaracteristique')
+    bonus_caracteristique_option = models.ForeignKey('OptionsCaracteristique',blank=True, related_name='race',null=True, on_delete=models.CASCADE)
     maitrises_depart= models.ManyToManyField('Maitrise',blank=True, related_name='race')
     maitrises_option= models.ForeignKey('OptionsMaitrise',blank=True, related_name='race',null=True, on_delete=models.CASCADE)
     langues = models.ManyToManyField('Langue',blank=True, related_name='race')
+    langues_option=models.ForeignKey('OptionsLangue',blank=True, related_name='race',null=True, on_delete=models.CASCADE)
     langues_desc = models.TextField(null=True,blank=True)
     traits = models.ManyToManyField('Trait',blank=True, related_name='race')
-    url=models.CharField(null=True, blank=True,max_length=50)
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.url = f"api/races/{self.index}"
-        return super().save(*args, **kwargs)
-        
+    sorts = models.ManyToManyField('Sort',blank=True, related_name='race')
+    sorts_option =   models.ForeignKey('OptionsSort',blank=True, related_name='race',null=True, on_delete=models.CASCADE)
 
 class Maitrise(BaseModel):
     type = models.ForeignKey('CategorieEquipement',blank=True,null=True, on_delete=models.CASCADE)
-    url=models.CharField(null=True, blank=True,max_length=50)
+    ref_equip = models.ForeignKey('Equipement',blank=True,null=True, on_delete=models.CASCADE)
+    ref_comp = models.ForeignKey('Competence',blank=True,null=True, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.url = f"api/maitrises/{self.index}"
         return super().save(*args, **kwargs)
 
 class Langue(BaseModel):
@@ -62,18 +64,8 @@ class Langue(BaseModel):
         self.url = f"api/langues/{self.index}"
         return super().save(*args, **kwargs)
 
-class SousRace(BaseModel):
+class SousRace(Race):
     race = models.ForeignKey('Race',null=True,blank=True,related_name='sous_race', on_delete=models.CASCADE)
-    bonus_caracteristique = models.ManyToManyField('Caracteristique',blank=True,through='ValeurCaracteristique')
-    maitrises_depart= models.ManyToManyField('Maitrise',blank=True, related_name='sous_race')
-    langues = models.ManyToManyField('Langue',blank=True, related_name='sous_race')
-    traits = models.ManyToManyField('Trait',blank=True, related_name='sous_race')
-    url=models.CharField(null=True, blank=True,max_length=50)
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.url = f"api/sous-races/{self.index}"
-        return super().save(*args, **kwargs)
 
 
 class Caracteristique(BaseModel):
@@ -110,6 +102,7 @@ class Historique(BaseModel):
     langues_options = models.ForeignKey('OptionsLangue',blank=True,null=True, on_delete=models.CASCADE)
     equipements_depart = models.ManyToManyField('Equipement',blank=True,related_name='historique',through='QuantiteEquipement')
     equipements_options = models.ForeignKey('OptionsEquipement',blank=True,null=True, on_delete=models.CASCADE)
+    monaie_depart = models.ManyToManyField('Monaie',blank=True,related_name='monaie',through='QuantiteMonaie')
     url=models.CharField(null=True, blank=True,max_length=50)
 
     def save(self, *args, **kwargs):
@@ -118,23 +111,20 @@ class Historique(BaseModel):
         return super().save(*args, **kwargs)
 
 class Equipement(BaseModel):
-    prix = models.ManyToManyField('Monaie',blank=True,through='QuantiteMonaie')
+    prix_objet = models.ManyToManyField('Monaie',blank=True,through='QuantiteMonaie')
     poids = models.DecimalField(
-         decimal_places=1, max_digits=4, null=True, blank=True)
+         decimal_places=3, max_digits=5, null=True, blank=True)
     categorie_equipement = models.ForeignKey("CategorieEquipement",blank=True,null=True, on_delete=models.CASCADE)
-    url=models.CharField(null=True, blank=True,max_length=50)
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.url = f"api/equipements/{self.index}"
-        return super().save(*args, **kwargs)
+    objects = InheritanceManager()
+    def get_absolute_url(self):
+        return reverse('equipements-detail', kwargs={'pk': self.pk})
+    
     
 class CategorieEquipement(BaseModel):
-    url=models.CharField(null=True, blank=True,max_length=50)
-
+    def get_absolute_url(self):
+        return reverse('categories-equipements-detail', kwargs={'pk': self.pk})
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.url = f"api/categories-equipements/{self.index}"
         return super().save(*args, **kwargs)
 
 class Arme(Equipement):
@@ -146,37 +136,62 @@ class Arme(Equipement):
         ('corps à corps','corps à corps'),
         ('distance','distance'),
     ]
-    categorie = models.CharField("categorie d'arme",null=True,blank=True, max_length=50,choices=CHOIX_CATEGORIE)
+    categorie_arme = models.CharField("categorie d'arme",null=True,blank=True, max_length=50,choices=CHOIX_CATEGORIE)
     type_portee = models.CharField("type de portée",null=True,blank=True, max_length=50,choices=CHOIX_PORTEE)
-    categorie_portee = models.CharField(null=True,blank=True, max_length=50)
-    portee = models.ForeignKey("Portee",null=True,blank=True, on_delete=models.CASCADE)
+    type = models.CharField(null=True,blank=True, max_length=50)
+    portee = models.ManyToManyField("Portee",blank=True)
     degat_une_main = models.ForeignKey("Degat",null=True,blank=True,related_name='degat1main', on_delete=models.CASCADE)
     degat_deux_mains =  models.ForeignKey("Degat",null=True,blank=True,related_name='degat2mains', on_delete=models.CASCADE)
+    degat_distance = models.ForeignKey("Degat",null=True,blank=True,related_name='degat_distance', on_delete=models.CASCADE)
     propriete = models.ManyToManyField('ProprieteArme',blank=True)
     special=models.TextField(null=True, blank=True)
+    
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.categorie_portee = '{}-{}'.format(self.type_portee,self.categorie)
-        self.url = f"api/armes/{self.index}"
+        if self.portee == 'distance':
+            self.type = '{} à {}'.format(self.categorie,self.type_portee)
+        else : 
+            self.type = '{} de {}'.format(self.categorie,self.type_portee)
+
         return super().save(*args, **kwargs)
 
 class Armure(Equipement):
     CHOIX_CATEGORIE=[
-        ('Armure légère','Armure légère'),
-        ('Armure intermédiaire','Armure intermédiaire'),
-        ('Armure lourde','Armure lourde'),
+        ('légères','Armure légère'),
+        ('intermédiaires','Armure intermédiaire'),
+        ('lourdes','Armure lourde'),
+        ('bouclier','bouclier')
     ]
-    categorie = models.CharField("categorie d'armure",null=True,blank=True, max_length=50)
-    classeArmure = models.ForeignKey('ClasseArmure', null=True, blank=True,on_delete=models.CASCADE)
+    categorie_armure = models.CharField("categorie d'armure",null=True,blank=True, max_length=50,choices=CHOIX_CATEGORIE)
+    CA = models.ForeignKey('ClasseArmure', null=True, blank=True,on_delete=models.CASCADE)
     force_min = models.IntegerField(default=0)
     desaventage_discretion = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.url = f"api/armures/{self.index}"
         return super().save(*args, **kwargs)
 
+class PackEquipement(Equipement):
+    lettre = models.CharField(null=True,blank=True, max_length=50)
+    contenu = models.ManyToManyField('Equipement',blank=True,related_name='pack')
+    def get_absolute_url(self):
+        return reverse('packs-equipements-detail', kwargs={'pk': self.pk})
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        return super().save(*args, **kwargs)
+    def __str__(self):
+        for item in self.race:
+            return self.lettre
+
+
+class Vehicule(Equipement):
+    categorie = models.CharField("categorie de véhicule",null=True,blank=True, max_length=50)
+    capacité = models.IntegerField(null=True,blank=True)
+    vitesse = models.IntegerField(null=True,blank=True)
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
 class ProprieteArme(BaseModel):
     url=models.CharField(null=True, blank=True,max_length=50)
@@ -257,6 +272,12 @@ class Capacite(BaseModel):
         return super().save(*args, **kwargs)
 
 class Sort(BaseModel):
+    CHOIX_ATTAQUE = [
+        ('cac','corps à corps'),
+        ('dist','distance'),
+        (None,'aucune'),
+    ]
+
     niveau = models.IntegerField(default=1)
     ecole = models.ForeignKey('EcoleMagie',blank=True, null=True,related_name='sort', on_delete=models.CASCADE)
     temps_incantation = models.ForeignKey('Periode',blank=True,related_name='temps_incantation', on_delete=models.CASCADE)
@@ -265,15 +286,11 @@ class Sort(BaseModel):
     duree = models.ForeignKey('Periode',blank=True,related_name='duree_sort' ,on_delete=models.CASCADE)
     portee = models.ForeignKey('Portee',blank=True,null=True, on_delete=models.CASCADE)
     composantes = models.ManyToManyField('Composante',blank=True)
+    composante_desc = models.TextField('composantes description',null=True, blank=True)
     jets_sauvegardes = models.ForeignKey('Caracteristique',null=True,blank=True, related_name='sort',on_delete=models.CASCADE)
-    degats = models.ManyToManyField('DegatSort')
+    jet_attaque = models.CharField("jets d'attaque",null=True,blank=True,default=None, max_length=50,choices=CHOIX_ATTAQUE)
+    degats = models.ManyToManyField('DegatSort',blank=True)
     cible = models.ForeignKey('Cible',null=True,blank=True,related_name='sort',on_delete=models.CASCADE)
-    url=models.CharField(null=True, blank=True,max_length=50)
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.url = f"api/sorts/{self.index}"
-        return super().save(*args, **kwargs)
 
 class EcoleMagie(BaseModel):
     url=models.CharField(null=True, blank=True,max_length=50)
@@ -457,7 +474,8 @@ class Cible(models.Model):
     type = models.CharField(null=True,blank=True,default='créature',max_length=50)
     cible = models.IntegerField(null=True,blank=True, default=1)
     zone = models.BooleanField(default=False)
-    rayon = models.IntegerField(null=True,blank=True,default=None)
+    rayon = models.DecimalField(
+         decimal_places=2, max_digits=4, null=True, blank=True)
     def __str__(self):
         if self.zone:
             return f'zone {self.rayon}m'
@@ -467,15 +485,17 @@ class Periode(models.Model):
     quantite = models.IntegerField(default=1)
     mesure = models.CharField(null=True,blank=True, max_length=50)
     def __str__(self):
+        if self.quantite == 0: return 'instantanée'
         return f'{self.quantite}{self.mesure}'
 
-class Composante(models.Model):
-    index = models.CharField(primary_key=True, max_length=1)
-    name = models.CharField(null=True,blank=True, max_length=10)
-    materiel = models.ManyToManyField('Equipement',blank=True)
+class Composante(BaseModel):
+    abreviation = models.CharField(null=True,blank=True, max_length=50)
+    materiel = models.ForeignKey('Equipement',blank=True, null=True, on_delete=models.CASCADE)
     consomme = models.BooleanField(default=False)
     def __str__(self):
-        return self.index
+        materiel = ""
+        if self.abreviation == 'M': materiel = '-'+str(self.materiel.index)
+        return self.abreviation +materiel
 
 class Multiclasse(models.Model):
     classe = models.OneToOneField('Classe', on_delete=models.CASCADE)
@@ -516,51 +536,32 @@ class PrerequisMagie(models.Model):
     desc = models.TextField(null=True,blank=True)
 
 
-class PackEquipement(Equipement):
-    lettre = models.CharField(null=True,blank=True, max_length=50)
-    contenu = models.ManyToManyField('Equipement',blank=True,related_name='pack')
-    def __str__(self):
-        for item in self.race:
-            return self.lettre
-
-class EquipementAventurier(Equipement):
-    categorie  = models.CharField("categorie d'equipement",null=True,blank=True, max_length=50)
-
-class Outil(Equipement):
-    categorie  = models.CharField("categorie d'outil",null=True,blank=True, max_length=50)
-
-class Kit(Equipement):
-    categorie  = models.CharField("categorie de kit",null=True,blank=True, max_length=50)
-
-class Instrument(Equipement):
-    categorie  = models.CharField("categorie d'instrument",null=True,blank=True, max_length=50)
-
-class Vehicule(Equipement):
-    categorie = models.CharField("categorie de véhicule",null=True,blank=True, max_length=50)
-    capacité = models.IntegerField(null=True,blank=True)
-    vitesse = models.IntegerField(null=True,blank=True)
-
-
 class ClasseArmure(models.Model):
     base=models.IntegerField(default=11)
     dex_bonus=models.BooleanField(default=True)
     max_bonus=models.IntegerField(default=None, null=True,blank=True)
+    bonus_CA = models.IntegerField(default=None, null=True,blank=True)
 
     def __str__(self):
-        if self.dex_bonus:
-            if self.max_bonus:
-                return f'{self.base}+dex MOD(max{self.max_bonus})'
-            return f'{self.base}+dex MOD'
-        return f'{self.base}'
+        dex = ""
+        bonus = ""
+        base = ""
+        if self.base: base = f'{self.base}'
+        if self.dex_bonus: dex = f' + Mod.Dex'
+        if self.max_bonus: dex = dex+f'(max +{self.max_bonus})'
+        if self.bonus_CA: bonus = f'+{self.bonus_CA}'
+        return base+dex+bonus
 
 class Portee(models.Model):
     min=models.FloatField(null=True, blank=True)
     max=models.FloatField(null=True, blank=True)
     def __str__(self):
+        if self.max == 0:
+            return "personnelle"
         if self.max == 1.5:
             return "càc"
         if self.max == 3:
-            return "càc allonge"
+            return "càc 3m"
         return f"{self.min}-{self.max}"
 
 class Degat(models.Model):
@@ -625,6 +626,14 @@ class CapaciteHistorique(models.Model):
     def __str__(self):
         return self.nom
 
+class OptionsCaracteristique(models.Model):
+    type = models.CharField(null=True,blank=True, max_length=50)
+    desc = models.TextField(null=True,blank=True)
+    nb = models.IntegerField('nombre de choix',default=1)
+    options=models.ManyToManyField('caracteristique',blank=True)
+    def __str__(self):
+        return self.type
+
 class OptionsCompetence(models.Model):
     type = models.CharField(null=True,blank=True, max_length=50)
     desc = models.TextField(null=True,blank=True)
@@ -657,6 +666,14 @@ class OptionsEquipement(models.Model):
     def __str__(self):
         return self.nom
 
+class OptionsSort(models.Model):
+    type = models.CharField(null=True,blank=True, max_length=50)
+    desc = models.TextField(null=True,blank=True)
+    nb = models.IntegerField('nombre de choix',default=1)
+    options=models.ManyToManyField('Sort',blank=True)
+    def __str__(self):
+        return self.type
+
 class RaceTypique(models.Model):
     nom = models.CharField(primary_key=True, max_length=50)
     def __str__(self):
@@ -672,8 +689,12 @@ class JetDeSauvegarde(models.Model):
 
 class QuantiteMonaie(models.Model):
     quantite = models.IntegerField(default=1)
-    monaie = models.ForeignKey('Monaie',blank=True,null=True, on_delete=models.CASCADE)
-    equipement = models.ForeignKey('Equipement',blank=True,null=True, on_delete=models.CASCADE)
+    monaie = models.ForeignKey('Monaie',default='Po',null=True, on_delete=models.CASCADE)
+    equipement = models.ForeignKey('Equipement',blank=True,null=True,related_name='prix', on_delete=models.CASCADE)
+    historique = models.ForeignKey('Historique',blank=True,null=True,related_name='monaie_de_depart', on_delete=models.CASCADE)
+    def __str__(self):
+        return f"{self.quantite} {self.monaie}"
+
 
 class QuantiteMonaie_inline(admin.TabularInline):
     model = QuantiteMonaie
@@ -682,8 +703,6 @@ class QuantiteMonaie_inline(admin.TabularInline):
 class MonaieAdmin(admin.ModelAdmin):
     inlines = (QuantiteMonaie_inline,)
 
-class EquipementAdmin(admin.ModelAdmin):
-    inlines = (QuantiteMonaie_inline,)
 
 class QuantiteEquipement(models.Model):
     quantite = models.IntegerField(default=1)
@@ -699,10 +718,10 @@ class QuantiteEquipement_inline(admin.TabularInline):
     extra = 0
 
 class EquipementAdmin(admin.ModelAdmin):
-    inlines = (QuantiteEquipement_inline,)
+    inlines = (QuantiteEquipement_inline,QuantiteMonaie_inline,)
 
 class HistoriqueAdmin(admin.ModelAdmin):
-    inlines = (QuantiteEquipement_inline,)
+    inlines = (QuantiteEquipement_inline,QuantiteMonaie_inline,)
 
 class ClasseAdmin(admin.ModelAdmin):
     inlines = (QuantiteEquipement_inline,)
@@ -729,8 +748,6 @@ class ValeurCaracteristique(models.Model):
         'Caracteristique', related_name='valeur_caract',blank=True,null=True, on_delete=models.CASCADE)
     race = models.ForeignKey(
         'Race', related_name='valeur_caract',blank=True,null=True, on_delete=models.CASCADE)
-    sous_race = models.ForeignKey(
-        'SousRace', related_name='valeur_caract',blank=True,null=True, on_delete=models.CASCADE)
     prerequis = models.ForeignKey(
         'PrerequisCaracteristique', related_name='valeur_caract',blank=True,null=True, on_delete=models.CASCADE)
     monstre = models.ForeignKey(
@@ -747,9 +764,6 @@ class CaracteristiqueAdmin(admin.ModelAdmin):
     inlines = (ValeurCaracteristique_inline,)
 
 class RaceAdmin(admin.ModelAdmin):
-    inlines = (ValeurCaracteristique_inline,)
-
-class SousRaceAdmin(admin.ModelAdmin):
     inlines = (ValeurCaracteristique_inline,)
 
 class PrerequisCaracteristiqueAdmin(admin.ModelAdmin):

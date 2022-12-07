@@ -1,7 +1,19 @@
-from rest_framework.serializers import ModelSerializer
- 
+from rest_framework.serializers import ModelSerializer, Field
+from rest_framework import serializers
+from decimal import Decimal
 from .models import *
 
+class PoidsField(Field):
+    def to_representation(self, value):
+        poids = value
+        return f"{Decimal(poids).normalize()}kg"
+
+class BaseSerializers(ModelSerializer):
+    url = serializers.SerializerMethodField()
+    def get_url(self,obj):
+       request = self.context.get('request')
+       abs_url = obj.get_absolute_url()
+       return request.build_absolute_uri(abs_url)
 
 class RaceSerializers(ModelSerializer):
  
@@ -44,39 +56,109 @@ class AlignementSerializers(ModelSerializer):
     class Meta:
         model = Alignement
         fields = '__all__'
+        
 
 class HistoriqueSerializers(ModelSerializer):
- 
+    monaie_de_depart = serializers.StringRelatedField(many=True)
+
     class Meta:
         model = Historique
         fields = '__all__'
+        depth = 1
 
-class EquipementSerializers(ModelSerializer):
- 
+
+class EquipementListSerializers(BaseSerializers):
+    prix = serializers.StringRelatedField(many=True)
+
     class Meta:
         model = Equipement
-        fields = '__all__'
+        fields = ['index','nom','categorie_equipement','prix','url']
+        
+    def to_representation(self, instance): 
+        if isinstance(instance, Arme):
+            return ArmeListSerializers(instance, context=self.context).to_representation(instance)
+        elif isinstance(instance, Armure):
+            return ArmureListSerializers(instance, context=self.context).to_representation(instance)
+        elif isinstance(instance, Vehicule):
+            return VehiculeListSerializers(instance, context=self.context).to_representation(instance)
+        else:
+            return super(EquipementListSerializers, self).to_representation(instance)
 
-class CategorieEquipementSerializers(ModelSerializer):
- 
+class EquipementDetailSerializers(BaseSerializers):
+    prix = serializers.StringRelatedField(many=True)
+    poids = PoidsField()
+    class Meta:
+        model = Equipement
+        fields= ['index','nom','categorie_equipement','prix','poids','desc','url']
+    def to_representation(self, instance): 
+        if isinstance(instance, Arme):
+            return ArmeDetailSerializers(instance, context=self.context).to_representation(instance)
+        elif isinstance(instance, Armure):
+            return ArmureDetailSerializers(instance, context=self.context).to_representation(instance)
+        elif isinstance(instance, Vehicule):
+            return VehiculeDetailSerializers(instance, context=self.context).to_representation(instance)
+        else:
+            return super(EquipementDetailSerializers, self).to_representation(instance)
+
+
+class PackEquipementSerializers(EquipementListSerializers):
+    class Meta:
+        model = PackEquipement
+
+class CategorieEquipementListSerializers(BaseSerializers):
+
     class Meta:
         model = CategorieEquipement
-        fields = '__all__'
+        fields = ['index','nom','url']
 
-class ArmeSerializers(ModelSerializer):
- 
+class CategorieEquipementDetailSerializers(BaseSerializers):
+    equipement_set = EquipementListSerializers(many=True,read_only=True)
+    class Meta:
+        model = CategorieEquipement
+        fields = ['index','nom','desc','equipement_set','url']
+
+class ArmeListSerializers(BaseSerializers):
+    
     class Meta:
         model = Arme
-        fields = '__all__'
+        fields = ['index','nom','type','prix','url']
+    
+class ArmeDetailSerializers(BaseSerializers):
+    prix = serializers.StringRelatedField(many=True)
+    poids = PoidsField()
+    degat_une_main = serializers.StringRelatedField()
+    degat_deux_mains = serializers.StringRelatedField()
+    degat_distance = serializers.StringRelatedField()
+    portee = serializers.StringRelatedField(many=True)
+    
+    class Meta:
+        model = Arme
+        fields = ['index','nom','categorie_equipement','categorie_arme','type_portee','type','prix','poids','degat_une_main','degat_deux_mains','degat_distance','portee','propriete','special','url']
 
-class ArmureSerializers(ModelSerializer):
- 
+class ArmureListSerializers(BaseSerializers):
+    
     class Meta:
         model = Armure
+        fields = ['index','nom','categorie_armure','prix','url']
+
+class ArmureDetailSerializers(BaseSerializers):
+    CA = serializers.StringRelatedField()
+    class Meta:
+        model = Armure
+        fields = ['index','nom','categorie_armure','prix','CA','poids','force_min','desaventage_discretion','url']
+
+class VehiculeListSerializers(EquipementListSerializers):
+    class Meta:
+        model = Vehicule
+        fields = ['index','nom','url']
+
+class VehiculeDetailSerializers(EquipementListSerializers):
+    class Meta:
+        model = Vehicule
         fields = '__all__'
 
 class ProprieteArmeSerializers(ModelSerializer):
- 
+
     class Meta:
         model = ProprieteArme
         fields = '__all__'

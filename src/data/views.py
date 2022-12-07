@@ -1,10 +1,22 @@
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
  
 from .models import *
 from .serializers import *
  
+class ReadOnlyMultiSerializerViewSet(ReadOnlyModelViewSet):
+    serializers = { 
+        'default': None,
+    }
+
+    def get_serializer_class(self):
+            return self.serializers.get(self.action,
+                        self.serializers['default'])
+
+
+
 class RaceViewset(ReadOnlyModelViewSet):
 
     serializer_class = RaceSerializers
@@ -63,31 +75,92 @@ class HistoriqueViewset(ReadOnlyModelViewSet):
  
 class EquipementViewset(ReadOnlyModelViewSet):
 
-    serializer_class = EquipementSerializers
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['categorie_equipement',]
+
+    model = Arme
+    serializer_classes = {
+        'list':EquipementListSerializers,
+        'retrieve':EquipementDetailSerializers,
+    }
+
+    default_serializer_class = EquipementListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
-        return Equipement.objects.all()
+        return Equipement.objects.select_subclasses()
  
 class CategorieEquipementViewset(ReadOnlyModelViewSet):
 
-    serializer_class = CategorieEquipementSerializers
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
+
+    model = CategorieEquipement
+    serializer_classes = {
+        'list':CategorieEquipementListSerializers,
+        'retrieve':CategorieEquipementDetailSerializers,
+    }
+
+    default_serializer_class = CategorieEquipementListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
         return CategorieEquipement.objects.all()
  
 class ArmeViewset(ReadOnlyModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['categorie_arme', 'type_portee',]
 
-    serializer_class = ArmeSerializers
+    model = Arme
+    serializer_classes = {
+        'list':ArmeListSerializers,
+        'retrieve':ArmeDetailSerializers,
+    }
+
+    default_serializer_class = ArmeListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
         return Arme.objects.all()
- 
-class ArmureViewset(ReadOnlyModelViewSet):
 
-    serializer_class = ArmureSerializers
+     
+class ArmureViewset(ReadOnlyModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['categorie_armure',]
+
+    model = Armure
+    serializer_classes = {
+        'list':ArmureListSerializers,
+        'retrieve':ArmureDetailSerializers,
+    }
+
+    default_serializer_class = ArmureListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
         return Armure.objects.all()
+ 
+class PackEquipementViewset(ReadOnlyModelViewSet):
+
+    serializer_class = PackEquipementSerializers
+
+    def get_queryset(self):
+        return PackEquipement.objects.all()
+ 
+class VehiculeViewset(ReadOnlyModelViewSet):
+
+    serializer_class = PackEquipementSerializers
+
+    def get_queryset(self):
+        return PackEquipement.objects.all()
  
 class ProprieteArmeViewset(ReadOnlyModelViewSet):
 
