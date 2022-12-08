@@ -6,59 +6,139 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import *
 from .serializers import *
  
-class ReadOnlyMultiSerializerViewSet(ReadOnlyModelViewSet):
-    serializers = { 
-        'default': None,
-    }
-
-    def get_serializer_class(self):
-            return self.serializers.get(self.action,
-                        self.serializers['default'])
-
-
 
 class RaceViewset(ReadOnlyModelViewSet):
 
-    serializer_class = RaceSerializers
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
+
+    model = Race
+    serializer_classes = {
+        'list':RaceListSerializers,
+        'retrieve':RaceDetailSerializers,
+    }
+
+    default_serializer_class = RaceListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
-        return Race.objects.all()
+        return Race.objects.filter(parent_race=True).select_subclasses()
+
+class SousRaceViewset(ReadOnlyModelViewSet):
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
+
+    model = SousRace
+    serializer_classes = {
+        'list':SousRaceListSerializers,
+        'retrieve':SousRaceDetailSerializers,
+    }
+
+    default_serializer_class = SousRaceListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
+
+    def get_queryset(self):
+        return SousRace.objects.all()
  
 class MaitriseViewset(ReadOnlyModelViewSet):
 
-    serializer_class = MaitriseSerializers
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
+
+    model = Maitrise
+    serializer_classes = {
+        'list':MaitriseListSerializers,
+        'retrieve':MaitriseDetailSerializers,
+    }
+
+    default_serializer_class = MaitriseListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
         return Maitrise.objects.all()
  
 class LangueViewset(ReadOnlyModelViewSet):
 
-    serializer_class = LangueSerializers
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
+
+    model = Langue
+    serializer_classes = {
+        'list':LangueListSerializers,
+        'retrieve':LangueDetailSerializers,
+    }
+
+    default_serializer_class = LangueListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
         return Langue.objects.all()
  
-class SousRaceViewset(ReadOnlyModelViewSet):
-
-    serializer_class = SousRaceSerializers
-
-    def get_queryset(self):
-        return SousRace.objects.all()
- 
 class CaracteristiqueViewset(ReadOnlyModelViewSet):
 
-    serializer_class = CaracteristiqueSerializers
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
+
+    model = Caracteristique
+    serializer_classes = {
+        'list':CaracteristiqueListSerializers,
+        'retrieve':CaracteristiqueDetailSerializers,
+    }
+
+    default_serializer_class = CaracteristiqueListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
         return Caracteristique.objects.all()
  
 class TraitViewset(ReadOnlyModelViewSet):
 
-    serializer_class = TraitSerializers
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['race']
+
+    model = Trait
+    serializer_classes = {
+        'list':TraitListSerializers,
+        'retrieve':TraitDetailSerializers,
+    }
+
+    default_serializer_class = TraitListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
         return Trait.objects.all()
- 
+
+class SortViewset(ReadOnlyModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
+
+    model = Sort
+    serializer_classes = {
+        'list':SortListSerializers,
+        'retrieve':SortDetailSerializers,
+    }
+
+    default_serializer_class = SortListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
+
+    def get_queryset(self):
+        return Sort.objects.all()
+
 class AlignementViewset(ReadOnlyModelViewSet):
 
     serializer_class = AlignementSerializers
@@ -156,11 +236,22 @@ class PackEquipementViewset(ReadOnlyModelViewSet):
         return PackEquipement.objects.all()
  
 class VehiculeViewset(ReadOnlyModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
 
-    serializer_class = PackEquipementSerializers
+    model = Vehicule
+    serializer_classes = {
+        'list':VehiculeListSerializers,
+        'retrieve':VehiculeDetailSerializers,
+    }
+
+    default_serializer_class = VehiculeListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
-        return PackEquipement.objects.all()
+        return Vehicule.objects.all()
  
 class ProprieteArmeViewset(ReadOnlyModelViewSet):
 
@@ -211,12 +302,6 @@ class CapaciteViewset(ReadOnlyModelViewSet):
     def get_queryset(self):
         return Capacite.objects.all()
  
-class SortViewset(ReadOnlyModelViewSet):
-
-    serializer_class = SortSerializers
-
-    def get_queryset(self):
-        return Sort.objects.all()
  
 class EcoleMagieViewset(ReadOnlyModelViewSet):
 

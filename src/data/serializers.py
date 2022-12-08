@@ -1,12 +1,14 @@
-from rest_framework.serializers import ModelSerializer, Field
+from rest_framework.serializers import ModelSerializer,StringRelatedField, Field, RelatedField
 from rest_framework import serializers
 from decimal import Decimal
 from .models import *
+from collections import OrderedDict
 
 class PoidsField(Field):
     def to_representation(self, value):
         poids = value
-        return f"{Decimal(poids).normalize()}kg"
+        return f"{'{:f}'.format(Decimal(poids).normalize())}kg"
+
 
 class BaseSerializers(ModelSerializer):
     url = serializers.SerializerMethodField()
@@ -14,65 +16,161 @@ class BaseSerializers(ModelSerializer):
        request = self.context.get('request')
        abs_url = obj.get_absolute_url()
        return request.build_absolute_uri(abs_url)
+    def to_representation(self, instance):
+        result = super(BaseSerializers, self).to_representation(instance)
+        return OrderedDict([(key, result[key]) for key in result if result[key] ])
 
-class RaceSerializers(ModelSerializer):
+class RaceListSerializers(BaseSerializers):
  
     class Meta:
         model = Race
-        fields = '__all__'
+        fields = ['index','nom','url']
 
-class MaitriseSerializers(ModelSerializer):
- 
-    class Meta:
-        model = Maitrise
-        fields = '__all__'
 
-class LangueSerializers(ModelSerializer):
- 
-    class Meta:
-        model = Langue
-        fields = '__all__'
-
-class SousRaceSerializers(ModelSerializer):
+class SousRaceListSerializers(BaseSerializers):
  
     class Meta:
         model = SousRace
-        fields = '__all__'
+        fields = ['index','nom','url']
 
-class CaracteristiqueSerializers(ModelSerializer):
+class MaitriseListSerializers(BaseSerializers):
+ 
+    class Meta:
+        model = Maitrise
+        fields = ['index','nom','url']
+
+class MaitriseDetailSerializers(BaseSerializers):
+    race = RaceListSerializers(many = True)
+    class Meta:
+        model = Maitrise
+        fields = ['index','nom','desc','type','ref_equip','ref_comp','race','url']
+
+class OptionsMaitriseSerializer(ModelSerializer):
+    parmis = MaitriseListSerializers(many=True)
+    class Meta:
+        model=OptionsMaitrise
+        fields = ['nom','desc','nombre_choix','parmis']
+
+class LangueListSerializers(BaseSerializers):
+ 
+    class Meta:
+        model = Langue
+        fields = ['index','nom','url']
+
+class LangueDetailSerializers(BaseSerializers):
+ 
+    class Meta:
+        model = Langue
+        fields = ['index','nom','type','desc','race_typiques','url']
+
+class OptionsLangueSerializer(ModelSerializer):
+    parmis = LangueListSerializers(many=True)
+    class Meta:
+        model=OptionsLangue
+        fields = ['nom','desc','nombre_choix','parmis']
+
+
+class CaracteristiqueListSerializers(BaseSerializers):
  
     class Meta:
         model = Caracteristique
-        fields = '__all__'
+        fields = ['index','nom','url']
 
-class TraitSerializers(ModelSerializer):
+class CaracteristiqueDetailSerializers(BaseSerializers):
+ 
+    class Meta:
+        model = Caracteristique
+        fields = ['index','nom','desc','url']
+
+class OptionsCaracteristiqueSerializer(ModelSerializer):
+    parmis = CaracteristiqueListSerializers(many=True)
+    class Meta:
+        model=OptionsCaracteristique
+        fields = ['nom','desc','nombre_choix','parmis']
+
+class TraitListSerializers(BaseSerializers):
  
     class Meta:
         model = Trait
-        fields = '__all__'
+        fields = ['index','nom','url']
 
-class AlignementSerializers(ModelSerializer):
+class TraitDetailSerializers(BaseSerializers):
+    race = RaceListSerializers(many = True)
+    class Meta:
+        model = Trait
+        fields = ['index','nom','desc','race','url']
+
+class CompetenceSerializers(ModelSerializer):
  
     class Meta:
-        model = Alignement
+        model = Competence
         fields = '__all__'
-        
 
-class HistoriqueSerializers(ModelSerializer):
-    monaie_de_depart = serializers.StringRelatedField(many=True)
 
+class EcoleMagieSerializers(ModelSerializer):
+ 
     class Meta:
-        model = Historique
+        model = EcoleMagie
         fields = '__all__'
-        depth = 1
 
+class SortListSerializers(BaseSerializers):
+ 
+    class Meta:
+        model = Sort
+        fields = ['index','nom','url']
+
+class SortDetailSerializers(BaseSerializers):
+    composantes = StringRelatedField(many=True)
+    temps_incantation = StringRelatedField()
+    duree = StringRelatedField()
+    portee = StringRelatedField()
+    cible = StringRelatedField()
+    degats = StringRelatedField(many=True)
+    class Meta:
+        model = Sort
+        fields = ['index','nom','desc','ecole','niveau','composantes','composante_desc','temps_incantation','concentration','duree','portee','cible','degats','jets_sauvegardes','jet_attaque','rituel','url']
+
+class OptionsSortSerializer(ModelSerializer):
+    parmis = SortListSerializers(many=True)
+    class Meta:
+        model=OptionsSort
+        fields = ['nom','desc','nombre_choix','parmis']
+
+
+class SousRaceDetailSerializers(BaseSerializers):
+    race = RaceListSerializers()
+    caracteristique = StringRelatedField(many=True)
+    maitrises_depart = MaitriseListSerializers(many=True)
+    maitrises_option = OptionsMaitriseSerializer()
+    langues = LangueListSerializers(many=True)
+    langues_option = OptionsLangueSerializer()
+    taille = StringRelatedField()
+    traits = TraitListSerializers(many=True)
+    sorts = SortListSerializers(many=True)
+    sorts_option = OptionsSortSerializer()
+    class Meta:
+        model = Race
+        fields = ['index','nom','race','vitesse','caracteristique','bonus_caracteristique_option','age','poids','taille','taille_details','maitrises_depart','maitrises_option','langues','langues_option','langues_desc','traits','sorts','sorts_option','url',]
+        depth = 2
+   
+
+class RaceDetailSerializers(BaseSerializers):
+    sous_race = SousRaceListSerializers(many=True)
+    caracteristique = StringRelatedField(many=True)
+    maitrises_depart = MaitriseListSerializers(many=True)
+    langues = LangueListSerializers(many=True)
+    taille = StringRelatedField()
+    traits = TraitListSerializers(many=True)
+    class Meta:
+        model = Race
+        fields = ['index','nom','vitesse','caracteristique','bonus_caracteristique_option','age','poids','taille','taille_details','maitrises_depart','maitrises_option','langues','langues_option','langues_desc','traits','sorts','sorts_option','sous_race','url',]
+        depth = 2
 
 class EquipementListSerializers(BaseSerializers):
-    prix = serializers.StringRelatedField(many=True)
 
     class Meta:
         model = Equipement
-        fields = ['index','nom','categorie_equipement','prix','url']
+        fields = ['index','nom','url']
         
     def to_representation(self, instance): 
         if isinstance(instance, Arme):
@@ -121,7 +219,7 @@ class ArmeListSerializers(BaseSerializers):
     
     class Meta:
         model = Arme
-        fields = ['index','nom','type','prix','url']
+        fields = ['index','nom','url']
     
 class ArmeDetailSerializers(BaseSerializers):
     prix = serializers.StringRelatedField(many=True)
@@ -135,30 +233,32 @@ class ArmeDetailSerializers(BaseSerializers):
         model = Arme
         fields = ['index','nom','categorie_equipement','categorie_arme','type_portee','type','prix','poids','degat_une_main','degat_deux_mains','degat_distance','portee','propriete','special','url']
 
-class ArmureListSerializers(BaseSerializers):
-    
+class ArmureListSerializers(BaseSerializers): 
     class Meta:
         model = Armure
-        fields = ['index','nom','categorie_armure','prix','url']
+        fields = ['index','nom','url']
 
 class ArmureDetailSerializers(BaseSerializers):
+    prix = serializers.StringRelatedField(many=True)
+    poids = PoidsField()
     CA = serializers.StringRelatedField()
     class Meta:
         model = Armure
         fields = ['index','nom','categorie_armure','prix','CA','poids','force_min','desaventage_discretion','url']
 
-class VehiculeListSerializers(EquipementListSerializers):
+class VehiculeListSerializers(BaseSerializers):
     class Meta:
         model = Vehicule
         fields = ['index','nom','url']
-
-class VehiculeDetailSerializers(EquipementListSerializers):
+#['index','nom','categorie','prix','capacité','vitesse','poids','desc','capacite','url']
+class VehiculeDetailSerializers(BaseSerializers):
+    prix = serializers.StringRelatedField(many=True)
+    poids = PoidsField()
     class Meta:
         model = Vehicule
-        fields = '__all__'
+        fields = ['index','nom','categorie','prix','capacite','vitesse','poids','desc','url']
 
 class ProprieteArmeSerializers(ModelSerializer):
-
     class Meta:
         model = ProprieteArme
         fields = '__all__'
@@ -168,6 +268,21 @@ class TypeDegatSerializers(ModelSerializer):
     class Meta:
         model = TypeDegat
         fields = '__all__'
+
+class AlignementSerializers(ModelSerializer):
+ 
+    class Meta:
+        model = Alignement
+        fields = '__all__'
+        
+
+class HistoriqueSerializers(ModelSerializer):
+    monaie_de_depart = serializers.StringRelatedField(many=True)
+
+    class Meta:
+        model = Historique
+        fields = '__all__'
+        depth = 1
 
 class ClasseSerializers(ModelSerializer):
  
@@ -200,28 +315,10 @@ class CapaciteSerializers(ModelSerializer):
         model = Capacite
         fields = '__all__'
 
-class SortSerializers(ModelSerializer):
- 
-    class Meta:
-        model = Sort
-        fields = '__all__'
-
-class EcoleMagieSerializers(ModelSerializer):
- 
-    class Meta:
-        model = EcoleMagie
-        fields = '__all__'
-
 class EtatSerializers(ModelSerializer):
  
     class Meta:
         model = Etat
-        fields = '__all__'
-
-class CompetenceSerializers(ModelSerializer):
- 
-    class Meta:
-        model = Competence
         fields = '__all__'
 
 class DonSerializers(ModelSerializer):
