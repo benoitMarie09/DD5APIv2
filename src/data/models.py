@@ -28,6 +28,7 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['index']
 
     def save(self, *args, **kwargs):
         self.index = slugify(self.nom)
@@ -54,19 +55,19 @@ class Race(BaseModel):
     bonus_caracteristique = models.ManyToManyField(
         'Caracteristique', blank=True, through='ValeurCaracteristique')
     bonus_caracteristique_option = models.ForeignKey(
-        'OptionsCaracteristique', blank=True, related_name='race', null=True, on_delete=models.CASCADE)
+        'Option', blank=True, related_name='race_caracteristiques', null=True, on_delete=models.CASCADE)
     maitrises_depart = models.ManyToManyField(
         'Maitrise', blank=True, related_name='race')
     maitrises_option = models.ForeignKey(
-        'OptionsMaitrise', blank=True, related_name='race', null=True, on_delete=models.CASCADE)
+        'Option', blank=True, related_name='race_maitrises', null=True, on_delete=models.CASCADE)
     langues = models.ManyToManyField('Langue', blank=True, related_name='race')
     langues_option = models.ForeignKey(
-        'OptionsLangue', blank=True, related_name='race', null=True, on_delete=models.CASCADE)
+        'Option', blank=True, related_name='race_langues', null=True, on_delete=models.CASCADE)
     langues_desc = models.TextField(null=True, blank=True)
     traits = models.ManyToManyField('Trait', blank=True, related_name='race')
     sorts = models.ManyToManyField('Sort', blank=True, related_name='race')
     sorts_option = models.ForeignKey(
-        'OptionsSort', blank=True, related_name='race', null=True, on_delete=models.CASCADE)
+        'Option', blank=True, related_name='race_sorts', null=True, on_delete=models.CASCADE)
     objects = InheritanceManager()
 
 
@@ -115,14 +116,14 @@ class Historique(BaseModel):
     maitrises_depart = models.ManyToManyField(
         'Maitrise', blank=True, related_name='historique')
     maitrises_options = models.ForeignKey(
-        'OptionsMaitrise', blank=True, null=True, on_delete=models.CASCADE)
+        'Option', blank=True, null=True,related_name='historique_maitrises', on_delete=models.CASCADE)
     competences = models.ManyToManyField('competence', blank=True)
     langues_options = models.ForeignKey(
-        'OptionsLangue', blank=True, null=True, on_delete=models.CASCADE)
+        'Option', blank=True, null=True,related_name='historique_langues', on_delete=models.CASCADE)
     equipements_depart = models.ManyToManyField(
         'Equipement', blank=True, related_name='historique', through='QuantiteEquipement')
     equipements_options = models.ForeignKey(
-        'OptionsEquipement', blank=True, null=True, on_delete=models.CASCADE)
+        'Option', blank=True, null=True,related_name='historique_equipements', on_delete=models.CASCADE)
     monaie_depart = models.ManyToManyField(
         'Monaie', blank=True, related_name='monaie', through='QuantiteMonaie')
     url = models.CharField(null=True, blank=True, max_length=50)
@@ -143,19 +144,12 @@ class CategorieEquipement(BaseModel):
     pass
 
 class Arme(Equipement):
-    CHOIX_CATEGORIE = [
-        ('Arme courante', 'Arme courante'),
-        ('Arme de guerre', 'Arme de guerre'),
-    ]
-    CHOIX_PORTEE = [
-        ('corps à corps', 'corps à corps'),
-        ('distance', 'distance'),
-    ]
-    categorie_arme = models.CharField(
-        "categorie d'arme", null=True, blank=True, max_length=50, choices=CHOIX_CATEGORIE)
-    type_portee = models.CharField(
-        "type de portée", null=True, blank=True, max_length=50, choices=CHOIX_PORTEE)
-    type = models.CharField(null=True, blank=True, max_length=50)
+    categorie_arme = models.ForeignKey(
+        "CategorieEquipement", blank=True, null=True,related_name='categorie_arme', on_delete=models.CASCADE)
+    categorie_portee = models.ForeignKey(
+        "CategorieEquipement", blank=True, null=True,related_name='categorie_portee', on_delete=models.CASCADE)
+    categorie_arme_portee = models.ForeignKey(
+        "CategorieEquipement",default='arme-de-guerre-de-corps-a-corps',related_name='categorie_arme_portee', on_delete=models.CASCADE)
     portee = models.ManyToManyField("Portee", blank=True)
     degat_une_main = models.ForeignKey(
         "Degat", null=True, blank=True, related_name='degat1main', on_delete=models.CASCADE)
@@ -165,25 +159,27 @@ class Arme(Equipement):
         "Degat", null=True, blank=True, related_name='degat_distance', on_delete=models.CASCADE)
     propriete = models.ManyToManyField('ProprieteArme', blank=True)
     special = models.TextField(null=True, blank=True)
-
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        if self.portee == 'distance':
-            self.type = '{} à {}'.format(self.categorie, self.type_portee)
+        if self.categorie_arme_portee.index == 'arme-courante-de-corps-a-corps':
+            self.categorie_arme=CategorieEquipement.objects.get(index= 'arme-courante')
+            self.categorie_portee = CategorieEquipement.objects.get(index= 'arme-de-corps-a-corps')
+        elif self.categorie_arme_portee.index == 'arme-de-guerre-a-distance':
+            self.categorie_arme=CategorieEquipement.objects.get(index= 'arme-de-guerre')
+            self.categorie_portee = CategorieEquipement.objects.get(index= 'arme-a-distance')
+        elif self.categorie_arme_portee.index == 'arme-courante-a-distance':
+            self.categorie_arme=CategorieEquipement.objects.get(index= 'arme-courante')
+            self.categorie_portee = CategorieEquipement.objects.get(index= 'arme-a-distance')
         else:
-            self.type = '{} de {}'.format(self.categorie, self.type_portee)
+            self.categorie_arme=CategorieEquipement.objects.get(index= 'arme-de-guerre')
+            self.categorie_portee = CategorieEquipement.objects.get(index= 'arme-de-corps-a-corps')
         return super().save(*args, **kwargs)
+    
 
 
 class Armure(Equipement):
-    CHOIX_CATEGORIE = [
-        ('légères', 'Armure légère'),
-        ('intermédiaires', 'Armure intermédiaire'),
-        ('lourdes', 'Armure lourde'),
-        ('bouclier', 'bouclier')
-    ]
-    categorie_armure = models.CharField(
-        "categorie d'armure", null=True, blank=True, max_length=50, choices=CHOIX_CATEGORIE)
+    categorie_armure = models.ForeignKey(
+        "CategorieEquipement", blank=True, null=True,related_name='categorie_armure', on_delete=models.CASCADE)
     CA = models.ForeignKey('ClasseArmure', null=True,
                            blank=True, on_delete=models.CASCADE)
     force_min = models.IntegerField(default=0)
@@ -217,15 +213,15 @@ class Classe(BaseModel):
     maitrises = models.ManyToManyField(
         'Maitrise', blank=True, related_name='classe')
     options_maitrises = models.ForeignKey(
-        'OptionsMaitrise', null=True, blank=True, on_delete=models.CASCADE)
+        'Option', null=True, blank=True,related_name='classe_maitrises', on_delete=models.CASCADE)
     jets_sauvegardes = models.ManyToManyField(
         'Caracteristique', blank=True, related_name='classe')
     options_competences = models.ForeignKey(
-        'OptionsCompetence', null=True, blank=True, related_name='classe', on_delete=models.CASCADE)
+        'Option', null=True, blank=True, related_name='classe_competences', on_delete=models.CASCADE)
     equipements_depart = models.ManyToManyField(
         'Equipement', blank=True, through='QuantiteEquipement', related_name='classe')
     equipements_options = models.ForeignKey(
-        'OptionsEquipement', null=True, blank=True, on_delete=models.CASCADE)
+        'Option', null=True, blank=True,related_name='classe_equipements', on_delete=models.CASCADE)
     incantation = models.OneToOneField(
         'Incantation', null=True, blank=True, related_name='classe', on_delete=models.CASCADE)
     sorts = models.ManyToManyField('Sort', blank=True, related_name='classe')
@@ -723,65 +719,79 @@ class CapaciteHistorique(models.Model):
     def __str__(self):
         return self.nom
 
-class OptionsCaracteristique(models.Model):
-    type = models.CharField(primary_key=True,max_length=50)
-    desc = models.TextField(null=True, blank=True)
+
+class Option(BaseModel):
     nombre_choix = models.IntegerField('nombre de choix', default=1)
-    parmis = models.ManyToManyField('caracteristique',related_name='caracteristique', blank=True)
-
+    caracteristiques = models.ManyToManyField('caracteristique',related_name='caracteristique', blank=True)
+    competences = models.ManyToManyField('Competence',related_name='competence', blank=True)
+    maitrises = models.ManyToManyField('Maitrise',related_name='maitrise', blank=True)
+    langues = models.ManyToManyField('Langue',related_name='langues', blank=True)
+    equipements = models.ManyToManyField('Equipement',related_name='equipements', blank=True)
+    sorts = models.ManyToManyField('Sort',related_name='sorts', blank=True)
     def __str__(self):
-        return f"{self.nom}_{self.nb}_choix"
+        return f"{self.index}_{self.nombre_choix}_choix"
 
 
 
-class OptionsCompetence(models.Model):
-    type = models.CharField(primary_key=True, max_length=50)
-    desc = models.TextField(null=True, blank=True)
-    nombre_choix = models.IntegerField('nombre de choix', default=1)
-    parmis = models.ManyToManyField('Competence', blank=True)
+# class OptionsCaracteristique(models.Model):
+#     type = models.CharField(primary_key=True,max_length=50)
+#     desc = models.TextField(null=True, blank=True)
+#     nombre_choix = models.IntegerField('nombre de choix', default=1)
+#     parmis = models.ManyToManyField('caracteristique',related_name='caracteristique', blank=True)
 
-    def __str__(self):
-        return f"{self.nom}_{self.nb}_choix"
-
-
-class OptionsMaitrise(models.Model):
-    nom = models.CharField(primary_key=True, max_length=50)
-    desc = models.TextField('description', null=True, blank=True)
-    nombre_choix = models.IntegerField('nombre de choix', default=1)
-    parmis = models.ManyToManyField('Maitrise', blank=True)
-
-    def __str__(self):
-        return f"{self.nom}_{self.nb}_choix"
+#     def __str__(self):
+#         return f"{self.nom}_{self.nombre_choix}_choix"
 
 
-class OptionsLangue(models.Model):
-    nom = models.CharField(primary_key=True, max_length=50)
-    desc = models.TextField('description', null=True, blank=True)
-    nombre_choix = models.IntegerField('nombre de choix', default=1)
-    parmis = models.ManyToManyField('Langue', blank=True)
 
-    def __str__(self):
-        return f"{self.nom}_{self.nb}_choix"
+# class OptionsCompetence(models.Model):
+#     type = models.CharField(primary_key=True, max_length=50)
+#     desc = models.TextField(null=True, blank=True)
+#     nombre_choix = models.IntegerField('nombre de choix', default=1)
+#     parmis = models.ManyToManyField('Competence', blank=True)
 
-
-class OptionsEquipement(models.Model):
-    nom = models.CharField(primary_key=True, max_length=50)
-    desc = models.TextField('description', null=True, blank=True)
-    nombre_choix = models.IntegerField('nombre de choix', default=1)
-    parmis = models.ManyToManyField('Equipement', blank=True)
-
-    def __str__(self):
-        return f"{self.nom}_{self.nb}_choix"
+#     def __str__(self):
+#         return f"{self.nom}_{self.nombre_choix}_choix"
 
 
-class OptionsSort(models.Model):
-    nom = models.CharField(primary_key=True, max_length=50)
-    desc = models.TextField(null=True, blank=True)
-    nombre_choix = models.IntegerField('nombre de choix', default=1)
-    parmis = models.ManyToManyField('Sort', blank=True)
+# class OptionsMaitrise(models.Model):
+#     nom = models.CharField(primary_key=True, max_length=50)
+#     desc = models.TextField('description', null=True, blank=True)
+#     nombre_choix = models.IntegerField('nombre de choix', default=1)
+#     parmis = models.ManyToManyField('Maitrise', blank=True)
 
-    def __str__(self):
-        return f"{self.nom}_{self.nb}_choix"
+#     def __str__(self):
+#         return f"{self.nom}_{self.nombre_choix}_choix"
+
+
+# class OptionsLangue(models.Model):
+#     nom = models.CharField(primary_key=True, max_length=50)
+#     desc = models.TextField('description', null=True, blank=True)
+#     nombre_choix = models.IntegerField('nombre de choix', default=1)
+#     parmis = models.ManyToManyField('Langue', blank=True)
+
+#     def __str__(self):
+#         return f"{self.nom}_{self.nombre_choix}_choix"
+
+
+# class OptionsEquipement(models.Model):
+#     nom = models.CharField(primary_key=True, max_length=50)
+#     desc = models.TextField('description', null=True, blank=True)
+#     nombre_choix = models.IntegerField('nombre de choix', default=1)
+#     parmis = models.ManyToManyField('Equipement', blank=True)
+
+#     def __str__(self):
+#         return f"{self.nom}_{self.nombre_choix}_choix"
+
+
+# class OptionsSort(models.Model):
+#     nom = models.CharField(primary_key=True, max_length=50)
+#     desc = models.TextField(null=True, blank=True)
+#     nombre_choix = models.IntegerField('nombre de choix', default=1)
+#     parmis = models.ManyToManyField('Sort', blank=True)
+
+#     def __str__(self):
+#         return f"{self.nom}_{self.nombre_choix}_choix"
 
 
 class RaceTypique(models.Model):

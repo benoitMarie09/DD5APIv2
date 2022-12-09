@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
  
 from .models import *
-from .serializers import *
+from .serializers_details import *
+from .serializers_lists import *
  
 
 class RaceViewset(ReadOnlyModelViewSet):
