@@ -136,9 +136,17 @@ class Equipement(BaseModel):
     poids = models.DecimalField(
         decimal_places=3, max_digits=5, null=True, blank=True)
     categorie_equipement = models.ForeignKey(
-        "CategorieEquipement", blank=True, null=True, on_delete=models.CASCADE)
+        "CategorieEquipement",default='outil', on_delete=models.CASCADE)
     objects = InheritanceManager()
-    
+
+class EquipementAventurier(Equipement):
+    categorie_equipement_aventurier = models.ForeignKey(
+        "CategorieEquipement",default='outil-dartisan', on_delete=models.CASCADE)
+
+class Sac(Equipement):
+    contenu =  models.ManyToManyField("EquipementAventurier", blank=True, through='QuantiteEquipementAventurier', related_name='sac')
+
+
 
 class CategorieEquipement(BaseModel):
     pass
@@ -185,14 +193,6 @@ class Armure(Equipement):
     force_min = models.IntegerField(default=0)
     desaventage_discretion = models.BooleanField(default=False)
 
-
-class PackEquipement(Equipement):
-    lettre = models.CharField(null=True, blank=True, max_length=50)
-    contenu = models.ManyToManyField(
-        'Equipement', blank=True, related_name='pack')
-
-    def __str__(self):
-        return self.lettre
 
 
 class Vehicule(Equipement):
@@ -843,11 +843,26 @@ class QuantiteEquipement(models.Model):
     classe = models.ForeignKey(
         'Classe', related_name='quantite_equipement', blank=True, null=True, on_delete=models.CASCADE)
 
+class QuantiteEquipementAventurier(models.Model):
+    quantite = models.IntegerField(default=1)
+    equipement = models.ForeignKey(
+        'EquipementAventurier', related_name='quantite_equipement_aventurier', blank=True, null=True, on_delete=models.CASCADE)
+    sac = models.ForeignKey(
+        'Sac', related_name='quantite_equipement_aventurier', blank=True, null=True, on_delete=models.CASCADE)
 
 class QuantiteEquipement_inline(admin.TabularInline):
     model = QuantiteEquipement
     extra = 0
 
+class QuantiteEquipementAventurier_inline(admin.TabularInline):
+    model = QuantiteEquipementAventurier
+    extra = 0
+
+class EquipementAventurierAdmin(admin.ModelAdmin):
+    inlines = (QuantiteEquipementAventurier_inline, QuantiteMonaie_inline)
+
+class SacAdmin(admin.ModelAdmin):
+    inlines = (QuantiteEquipementAventurier_inline, QuantiteMonaie_inline)
 
 class EquipementAdmin(admin.ModelAdmin):
     inlines = (QuantiteEquipement_inline, QuantiteMonaie_inline,)

@@ -132,9 +132,9 @@ class EquipementListSerializers(BaseSerializers):
         else:
             return super(EquipementListSerializers, self).to_representation(instance)
 
-class PackEquipementSerializers(EquipementListSerializers):
-    class Meta:
-        model = PackEquipement
+# class PackEquipementSerializers(EquipementListSerializers):
+#     class Meta:
+#         model = PackEquipement
 
 class CategorieEquipementListSerializers(BaseSerializers):
 

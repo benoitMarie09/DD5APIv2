@@ -229,12 +229,12 @@ class ArmureViewset(ReadOnlyModelViewSet):
     def get_queryset(self):
         return Armure.objects.all()
  
-class PackEquipementViewset(ReadOnlyModelViewSet):
+# class PackEquipementViewset(ReadOnlyModelViewSet):
 
-    serializer_class = PackEquipementSerializers
+#     serializer_class = PackEquipementSerializers
 
-    def get_queryset(self):
-        return PackEquipement.objects.all()
+#     def get_queryset(self):
+#         return PackEquipement.objects.all()
  
 class VehiculeViewset(ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend]
