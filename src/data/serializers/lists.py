@@ -128,15 +128,14 @@ class CompetenceListSerializers(BaseSerializers):
         fields = ['index','nom','url']
 
 
-class AlignementListSerializers(ModelSerializer):
+class AlignementListSerializers(BaseSerializers):
  
     class Meta:
         model = Alignement
         fields = ['index','nom','url']
         
 
-class HistoriqueListSerializers(ModelSerializer):
-    monaie_de_depart = serializers.StringRelatedField(many=True)
+class HistoriqueListSerializers(BaseSerializers):
 
     class Meta:
         model = Historique
@@ -149,12 +148,12 @@ class InfoListSerializers(BaseSerializers):
         model = Info
         fields = ['nom','desc']
 
-class ProprieteArmeListSerializers(ModelSerializer):
+class ProprieteArmeListSerializers(BaseSerializers):
     class Meta:
         model = ProprieteArme
         fields = ['index','nom','url']
 
-class TypeDegatListSerializers(ModelSerializer):
+class TypeDegatListSerializers(BaseSerializers):
  
     class Meta:
         model = TypeDegat
@@ -197,3 +196,16 @@ class NiveauxClasseListSerializers(BaseSerializers):
     class Meta:
         model = NiveauxClasse
         fields = ['index','nom','url']
+
+class EtatListSerializers(BaseSerializers):
+ 
+    class Meta:
+        model = Etat
+        fields = ['index','nom','url']
+
+class RaceMaitrisesOptionsList(BaseSerializers):
+    maitrises_depart = MaitriseListSerializers(many=True)
+    maitrises_option = OptionListSerializer()
+    class Meta:
+        model = Race
+        fields = ['maitrises_depart','maitrises_option']

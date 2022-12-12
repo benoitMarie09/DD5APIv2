@@ -110,7 +110,7 @@ class Trait(BaseModel):
 
 class Alignement(BaseModel):
     abreviation = models.CharField(null=True, blank=True, max_length=2)
-    url = models.CharField(null=True, blank=True, max_length=50)
+
 
 
 
@@ -128,8 +128,8 @@ class Historique(BaseModel):
         'Option', blank=True, null=True,related_name='historique_equipements', on_delete=models.CASCADE)
     monaie_depart = models.ManyToManyField(
         'Monaie', blank=True, related_name='monaie', through='QuantiteMonaie')
-    url = models.CharField(null=True, blank=True, max_length=50)
-
+    def get_absolute_url(self):
+        return reverse(endpoint_case(camel_to_snake(str(self.__class__.__name__))), kwargs={'pk': self.pk})
 
 
 class Equipement(BaseModel):
@@ -204,6 +204,7 @@ class Vehicule(Equipement):
 
 class ProprieteArme(BaseModel):
     pass
+
 
 class TypeDegat(BaseModel):
     pass

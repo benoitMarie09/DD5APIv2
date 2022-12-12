@@ -107,11 +107,7 @@ class SousClasseSerializers(ModelSerializer):
 
 
 
-class EtatSerializers(ModelSerializer):
- 
-    class Meta:
-        model = Etat
-        fields = '__all__'
+
 
 class DonSerializers(ModelSerializer):
  

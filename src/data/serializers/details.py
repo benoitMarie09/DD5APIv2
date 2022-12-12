@@ -223,23 +223,35 @@ class AlignementDetailSerializers(ModelSerializer):
         model = Alignement
         fields = '__all__'
 
-class HistoriqueDetailSerializers(ModelSerializer):
-    monaie_de_depart = serializers.StringRelatedField(many=True)
-
+class HistoriqueDetailSerializers(BaseSerializers):
+    maitrises_depart = MaitriseListSerializers(many=True)
+    langues_options = OptionListSerializer()
+    maitrises_options =OptionListSerializer()
+    equipements_options =OptionListSerializer()
+    competences = CompetenceListSerializers(many=True)
+    equipements_depart = EquipementListSerializers(many=True)
+    monaie_de_depart = StringRelatedField(many=True)
     class Meta:
         model = Historique
-        fields = '__all__'
+        fields = ['index','nom','desc','maitrises_depart','maitrises_options','competences','langues_options','equipements_depart','equipements_options','monaie_de_depart','url']
+        depth = 1
 
-class ProprieteArmeDetailSerializers(ModelSerializer):
+class EtatDetailSerializers(BaseSerializers):
+
+    class Meta:
+        model = Etat
+        fields = ['index','nom','desc','url']
+
+class ProprieteArmeDetailSerializers(BaseSerializers):
     class Meta:
         model = ProprieteArme
-        fields = '__all__'
+        fields = ['index','nom','desc','url']
 
-class TypeDegatDetailSerializers(ModelSerializer):
+class TypeDegatDetailSerializers(BaseSerializers):
  
     class Meta:
         model = TypeDegat
-        fields = '__all__'
+        fields = ['index','nom','desc','url']
 
 class CompetenceDetailSerializers(BaseSerializers):
  
