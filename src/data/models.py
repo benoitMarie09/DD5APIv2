@@ -12,7 +12,9 @@ def camel_to_snake(camel):
 def endpoint_case(snake):
     list = []
     for word in snake.split('_'): 
-        if word[-1] not in ('s','x'):
+        if word == 'niveau':
+            list.append('niveaux')
+        elif word[-1] not in ('s','x'):
             list.append(word+'s')
         else:
             list.append(word)
@@ -147,7 +149,6 @@ class Sac(Equipement):
     contenu =  models.ManyToManyField("EquipementAventurier", blank=True, through='QuantiteEquipementAventurier', related_name='sac')
 
 
-
 class CategorieEquipement(BaseModel):
     pass
 
@@ -225,13 +226,19 @@ class Classe(BaseModel):
     incantation = models.OneToOneField(
         'Incantation', null=True, blank=True, related_name='classe', on_delete=models.CASCADE)
     sorts = models.ManyToManyField('Sort', blank=True, related_name='classe')
-    url_niveau = models.CharField(null=True, blank=True, max_length=50)
+    niveaux = models.ManyToManyField('Niveau',related_name='classe', blank=True)
 
+class PackEquipementClasse(BaseModel):
+    contenu = models.ManyToManyField('Equipement', blank=True, related_name='Pack',through='QuantiteEquipement')
+    options = models.ManyToManyField('Option', blank=True, related_name='Pack')
 
 class Incantation(models.Model):
-    Caracteristique = models.ForeignKey(
+    nom = models.CharField(max_length=50, blank=True, null=True)
+    caracteristique = models.ForeignKey(
         'Caracteristique', blank=True, null=True, on_delete=models.CASCADE)
     info = models.ManyToManyField('Info', blank=True)
+    def __str__(self):
+        return f"{self.nom}"
 
 
 class SousClasse(BaseModel):
@@ -252,7 +259,10 @@ class NiveauxClasse(BaseModel):
 
 
 class Capacite(BaseModel):
-    pass
+    classe = models.ForeignKey(
+        'Classe', null=True, blank=True, related_name='capacite', on_delete=models.CASCADE)
+    sous_classe = models.ForeignKey(
+        'SousClasse', null=True, blank=True, related_name='capacite', on_delete=models.CASCADE)
 
 
 class Sort(BaseModel):
@@ -372,7 +382,10 @@ class Niveau(BaseModel):
         'EmplacementSort', blank=True, null=True, related_name='niveau', on_delete=models.CASCADE)
     specifique_classe = models.ManyToManyField(
         'Specifique', blank=True, through='QuantiteSpecifique')
-
+    class Meta:
+        ordering = ['classe','niveau',] 
+    def get_absolute_url(self):
+        return reverse('classes-niveau', args=[self.classe.all()[0].index,self.niveau])
 
 class EmplacementSort(models.Model):
     sort_connu = models.IntegerField(default=None, null=True, blank=True)
@@ -727,71 +740,11 @@ class Option(BaseModel):
     maitrises = models.ManyToManyField('Maitrise',related_name='maitrise', blank=True)
     langues = models.ManyToManyField('Langue',related_name='langues', blank=True)
     equipements = models.ManyToManyField('Equipement',related_name='equipements', blank=True)
+    categories_equipements = models.ManyToManyField('CategorieEquipement',related_name='categories_equipements', blank=True)
+    packs_equipements = models.ManyToManyField('PackEquipementClasse',related_name='categories_equipements', blank=True)
     sorts = models.ManyToManyField('Sort',related_name='sorts', blank=True)
     def __str__(self):
         return f"{self.index}_{self.nombre_choix}_choix"
-
-
-
-# class OptionsCaracteristique(models.Model):
-#     type = models.CharField(primary_key=True,max_length=50)
-#     desc = models.TextField(null=True, blank=True)
-#     nombre_choix = models.IntegerField('nombre de choix', default=1)
-#     parmis = models.ManyToManyField('caracteristique',related_name='caracteristique', blank=True)
-
-#     def __str__(self):
-#         return f"{self.nom}_{self.nombre_choix}_choix"
-
-
-
-# class OptionsCompetence(models.Model):
-#     type = models.CharField(primary_key=True, max_length=50)
-#     desc = models.TextField(null=True, blank=True)
-#     nombre_choix = models.IntegerField('nombre de choix', default=1)
-#     parmis = models.ManyToManyField('Competence', blank=True)
-
-#     def __str__(self):
-#         return f"{self.nom}_{self.nombre_choix}_choix"
-
-
-# class OptionsMaitrise(models.Model):
-#     nom = models.CharField(primary_key=True, max_length=50)
-#     desc = models.TextField('description', null=True, blank=True)
-#     nombre_choix = models.IntegerField('nombre de choix', default=1)
-#     parmis = models.ManyToManyField('Maitrise', blank=True)
-
-#     def __str__(self):
-#         return f"{self.nom}_{self.nombre_choix}_choix"
-
-
-# class OptionsLangue(models.Model):
-#     nom = models.CharField(primary_key=True, max_length=50)
-#     desc = models.TextField('description', null=True, blank=True)
-#     nombre_choix = models.IntegerField('nombre de choix', default=1)
-#     parmis = models.ManyToManyField('Langue', blank=True)
-
-#     def __str__(self):
-#         return f"{self.nom}_{self.nombre_choix}_choix"
-
-
-# class OptionsEquipement(models.Model):
-#     nom = models.CharField(primary_key=True, max_length=50)
-#     desc = models.TextField('description', null=True, blank=True)
-#     nombre_choix = models.IntegerField('nombre de choix', default=1)
-#     parmis = models.ManyToManyField('Equipement', blank=True)
-
-#     def __str__(self):
-#         return f"{self.nom}_{self.nombre_choix}_choix"
-
-
-# class OptionsSort(models.Model):
-#     nom = models.CharField(primary_key=True, max_length=50)
-#     desc = models.TextField(null=True, blank=True)
-#     nombre_choix = models.IntegerField('nombre de choix', default=1)
-#     parmis = models.ManyToManyField('Sort', blank=True)
-
-#     def __str__(self):
-#         return f"{self.nom}_{self.nombre_choix}_choix"
 
 
 class RaceTypique(models.Model):
@@ -813,7 +766,7 @@ class JetDeSauvegarde(models.Model):
 
 
 class QuantiteMonaie(models.Model):
-    quantite = models.IntegerField(default=1)
+    quantite = models.IntegerField()
     monaie = models.ForeignKey(
         'Monaie', default='Po', null=True, on_delete=models.CASCADE)
     equipement = models.ForeignKey(
@@ -823,6 +776,7 @@ class QuantiteMonaie(models.Model):
 
     def __str__(self):
         return f"{self.quantite} {self.monaie}"
+
 
 
 class QuantiteMonaie_inline(admin.TabularInline):
@@ -837,11 +791,16 @@ class MonaieAdmin(admin.ModelAdmin):
 class QuantiteEquipement(models.Model):
     quantite = models.IntegerField(default=1)
     equipement = models.ForeignKey(
-        'Equipement', related_name='quantite_equipement', blank=True, null=True, on_delete=models.CASCADE)
+        'Equipement', related_name='quantite', blank=True, null=True, on_delete=models.CASCADE)
     historique = models.ForeignKey(
         'Historique', related_name='quantite_equipement', blank=True, null=True, on_delete=models.CASCADE)
     classe = models.ForeignKey(
         'Classe', related_name='quantite_equipement', blank=True, null=True, on_delete=models.CASCADE)
+    pack_equipement = models.ForeignKey(
+        'PackEquipementClasse', related_name='contenu_pack', blank=True, null=True, on_delete=models.CASCADE)
+    def __str__(self):
+        return f"{self.quantite}"
+
 
 class QuantiteEquipementAventurier(models.Model):
     quantite = models.IntegerField(default=1)
@@ -852,11 +811,14 @@ class QuantiteEquipementAventurier(models.Model):
 
 class QuantiteEquipement_inline(admin.TabularInline):
     model = QuantiteEquipement
-    extra = 0
+
+
+class PackEquipementClasseAdmin(admin.ModelAdmin):
+    inlines = (QuantiteEquipement_inline,)
 
 class QuantiteEquipementAventurier_inline(admin.TabularInline):
     model = QuantiteEquipementAventurier
-    extra = 0
+
 
 class EquipementAventurierAdmin(admin.ModelAdmin):
     inlines = (QuantiteEquipementAventurier_inline, QuantiteMonaie_inline)
@@ -877,12 +839,15 @@ class ClasseAdmin(admin.ModelAdmin):
 
 
 class QuantiteSpecifique(models.Model):
-    quantite = models.IntegerField(default=1)
+    valeur = models.DecimalField(
+        decimal_places=2, max_digits=4, null=True, blank=True)
+    quantite = models.IntegerField(default=1,blank=True, null=True)
     specifique = models.ForeignKey(
         'Specifique', null=True, blank=True, on_delete=models.CASCADE)
     niveau = models.ForeignKey(
-        'Niveau', null=True, blank=True, on_delete=models.CASCADE)
-
+        'Niveau', null=True, blank=True,related_name='specifique', on_delete=models.CASCADE)
+    def __str__(self):
+        return f"{self.quantite}"
 
 class QuantiteSpecifique_inline(admin.TabularInline):
     model = QuantiteSpecifique

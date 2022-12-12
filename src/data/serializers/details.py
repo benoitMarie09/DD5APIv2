@@ -1,9 +1,7 @@
-from rest_framework.serializers import ModelSerializer,StringRelatedField, Field, RelatedField
+from rest_framework.serializers import ModelSerializer,StringRelatedField
 from rest_framework import serializers
-from decimal import Decimal
-from .models import *
-from collections import OrderedDict
-from .serializers_lists import *
+from ..models import *
+from .lists import *
 
 
 
@@ -76,9 +74,27 @@ class EquipementDetailSerializers(BaseSerializers):
             return ArmureDetailSerializers(instance, context=self.context).to_representation(instance)
         elif isinstance(instance, Vehicule):
             return VehiculeDetailSerializers(instance, context=self.context).to_representation(instance)
+        elif isinstance(instance, EquipementAventurier):
+            return EquipementAventurierDetailSerializers(instance, context=self.context).to_representation(instance)
+        elif isinstance(instance, Sac):
+            return SacDetailSerializers(instance, context=self.context).to_representation(instance)
         else:
             return super(EquipementDetailSerializers, self).to_representation(instance)
 
+class EquipementAventurierDetailSerializers(BaseSerializers):
+    prix = serializers.StringRelatedField(many=True)
+    poids = PoidsField()
+    class Meta:
+        model = EquipementAventurier
+        fields= ['index','nom','categorie_equipement','categorie_equipement_aventurier','prix','poids','desc','url']
+
+
+class SacDetailSerializers(BaseSerializers):
+    prix = serializers.StringRelatedField(many=True)
+    contenu = EquipementAventurierListSerializers(many=True)
+    class Meta:
+        model = Sac
+        fields= ['index','nom','categorie_equipement','prix','contenu','desc','url']
     
 class ArmeDetailSerializers(BaseSerializers):
     prix = serializers.StringRelatedField(many=True)
@@ -135,3 +151,105 @@ class RaceDetailSerializers(BaseSerializers):
         model = Race
         fields = ['index','nom','vitesse','caracteristique','bonus_caracteristique_option','age','poids','taille','taille_details','maitrises_depart','maitrises_option','langues','langues_option','langues_desc','traits','sorts','sorts_option','sous_race','url',]
         depth = 2
+
+class OptionPackDetailSerializer(OptionListSerializer):
+    packs_equipements = PackEquipementClasseListSerializers(many=True)
+    class Meta:
+        model=Option
+        fields = ['desc','nombre_choix','packs_equipements']
+
+
+class IncantationDetailSerializers(BaseSerializers):
+    info = InfoListSerializers(many=True)
+    caracteristique = CaracteristiqueListSerializers()
+    class Meta:
+        model = Incantation
+        fields = ['nom','caracteristique','info']
+
+
+class NiveauDetailSerializers(BaseSerializers):
+    capacite = CapaciteListSerializers(many=True)
+    emplacements_sorts = EmplacementSortField(read_only = True)
+    specifique = SpecifiqueField(many=True, read_only = True)
+
+    class Meta:
+        model = Niveau
+        fields = ['index', 'nom','niveau','bonus_maitrise','capacite','emplacements_sorts','specifique','url']
+
+
+
+class ClasseDetailSerializers(BaseSerializers):
+    maitrises = MaitriseListSerializers(many=True)
+    options_maitrises = OptionListSerializer()
+    options_competences = OptionListSerializer()
+    equipements_depart = EquipementListSerializers(many=True)
+    equipements_options = OptionPackDetailSerializer()
+    incantation = IncantationDetailSerializers()
+    sorts = serializers.SerializerMethodField()
+    niveaux = serializers.SerializerMethodField()
+    class Meta:
+        model = Classe
+        fields = ['index','nom','pv','jets_sauvegardes','maitrises','options_maitrises','options_competences','equipements_depart','equipements_options','incantation', 'sorts', 'niveaux']
+        depth = 3
+    def get_attribute(self, instance):
+        return instance
+    def get_sorts(self,obj):
+       request = self.context.get('request')
+       abs_url = obj.get_absolute_url()
+       sorts_url = request.build_absolute_uri(abs_url+'sorts')
+       return sorts_url
+    def get_niveaux(self,obj):
+       request = self.context.get('request')
+       abs_url = obj.get_absolute_url()
+       niveaux_url = request.build_absolute_uri(abs_url+'niveaux')
+       return niveaux_url
+
+
+class NiveauxClasseDetailSerializers(BaseSerializers):
+    niveaux = NiveauDetailSerializers(many=True)
+    class Meta:
+        model = NiveauxClasse
+        fields = ['classe','niveaux','url']
+
+
+class CapaciteDetailSerializers(BaseSerializers):
+    class Meta:
+        model = Capacite
+        fields = ['index','nom','classe','sous_classe','desc']
+
+class AlignementDetailSerializers(ModelSerializer):
+ 
+    class Meta:
+        model = Alignement
+        fields = '__all__'
+
+class HistoriqueDetailSerializers(ModelSerializer):
+    monaie_de_depart = serializers.StringRelatedField(many=True)
+
+    class Meta:
+        model = Historique
+        fields = '__all__'
+
+class ProprieteArmeDetailSerializers(ModelSerializer):
+    class Meta:
+        model = ProprieteArme
+        fields = '__all__'
+
+class TypeDegatDetailSerializers(ModelSerializer):
+ 
+    class Meta:
+        model = TypeDegat
+        fields = '__all__'
+
+class CompetenceDetailSerializers(BaseSerializers):
+ 
+    class Meta:
+        model = Competence
+        fields = '__all__'
+
+
+class EcoleMagieDetailSerializers(BaseSerializers):
+ 
+    class Meta:
+        model = EcoleMagie
+        fields = '__all__'

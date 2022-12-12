@@ -1,11 +1,11 @@
-from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
  
 from .models import *
-from .serializers_details import *
-from .serializers_lists import *
+from .serializers.details import *
+from .serializers.lists import *
  
 
 class RaceViewset(ReadOnlyModelViewSet):
@@ -141,15 +141,37 @@ class SortViewset(ReadOnlyModelViewSet):
         return Sort.objects.all()
 
 class AlignementViewset(ReadOnlyModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
 
-    serializer_class = AlignementSerializers
+    model = Alignement
+    serializer_classes = {
+        'list':AlignementListSerializers,
+        'retrieve':AlignementDetailSerializers,
+    }
+
+    default_serializer_class = AlignementListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
         return Alignement.objects.all()
  
 class HistoriqueViewset(ReadOnlyModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
 
-    serializer_class = HistoriqueSerializers
+    model = Historique
+    serializer_classes = {
+        'list':HistoriqueListSerializers,
+        'retrieve':HistoriqueDetailSerializers,
+    }
+
+    default_serializer_class = HistoriqueListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
         return Historique.objects.all()
@@ -159,7 +181,7 @@ class EquipementViewset(ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['categorie_equipement',]
 
-    model = Arme
+    model = Equipement
     serializer_classes = {
         'list':EquipementListSerializers,
         'retrieve':EquipementDetailSerializers,
@@ -229,12 +251,85 @@ class ArmureViewset(ReadOnlyModelViewSet):
     def get_queryset(self):
         return Armure.objects.all()
  
-# class PackEquipementViewset(ReadOnlyModelViewSet):
+class ClasseViewset(ReadOnlyModelViewSet):
 
-#     serializer_class = PackEquipementSerializers
+    model = Classe
+    serializer_classes = {
+        'list':ClasseListSerializers,
+        'retrieve':ClasseDetailSerializers,
+    }
 
-#     def get_queryset(self):
-#         return PackEquipement.objects.all()
+    default_serializer_class = ClasseListSerializers
+
+    @action(detail=True,url_path='sous-classes')
+    def sous_classes(self, request, pk=None):
+        classe = self.get_object()
+        sous_classes = classe.sous_classe.all()
+        serializers = SousClasseSerializers(sous_classes,context = {'request':request}, many=True)
+        return Response(serializers.data)
+
+    @action(detail=True,url_path='incantation')
+    def incantation(self, request, pk=None):
+        classe = self.get_object()
+        incantation = classe.incantation
+        serializers = IncantationDetailSerializers(incantation,context = {'request':request})
+        return Response(serializers.data)
+
+    # @action(detail=True,url_path='multiclasse')
+    # def sous_classes(self, request, pk=None):
+    #     classe = self.get_object()
+    #     sous_classes = classe.sous_classe.all()
+    #     serializers = SousClasseSerializers(sous_classes, many=True)
+    #     return Response(serializers.data)
+
+    @action(detail=True,url_path='sorts')
+    def sorts(self, request, pk=None):
+        classe = self.get_object()
+        sorts = classe.sorts.all()
+        serializers = SortListSerializers(sorts,context = {'request':request}, many=True)
+        return Response(serializers.data)
+
+    @action(detail=True,url_path='capacites')
+    def capacites(self, request, pk=None):
+        classe = self.get_object()
+        capacites = classe.capacite.all()
+        serializers = CapaciteListSerializers(capacites,context = {'request':request}, many=True)
+        return Response(serializers.data)
+
+    @action(detail=True,url_path='maitrises')
+    def maitrises(self, request,pk=None):
+        classe = self.get_object()
+        maitrises = classe.maitrises.all()
+        serializers = MaitriseListSerializers(maitrises,context = {'request':request}, many=True)
+        return Response(serializers.data)
+
+    @action(detail=True,url_path='niveaux/(?P<niveau>\w+)/capacite', url_name='niveau_capacite')
+    def niveau_capacite(self, request,pk,niveau):
+        capacite = self.get_object().niveaux.get(niveau=niveau).capacite.all()
+        print(capacite)
+        serializers = CapaciteListSerializers(capacite,context = {'request':request},many=True)
+        return Response(serializers.data)
+
+    @action(detail=True,url_path='niveaux/(?P<niveau>\w+)', url_name='niveau')
+    def niveaux_detail(self, request,pk,niveau):
+        niv = self.get_object().niveaux.get(niveau=niveau)
+        serializers = NiveauDetailSerializers(niv,context = {'request':request})
+        return Response(serializers.data)
+
+    @action(detail=True,url_path='niveaux', url_name='niveaux')
+    def niveaux(self, request,pk=None):
+        classe = self.get_object()
+        niveaux = classe.niveaux.all()
+        serializers = NiveauDetailSerializers(niveaux,context = {'request':request}, many=True)
+        return Response(serializers.data)
+
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
+
+    def get_queryset(self):
+        return Classe.objects.all()
+
  
 class VehiculeViewset(ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend]
@@ -255,32 +350,41 @@ class VehiculeViewset(ReadOnlyModelViewSet):
         return Vehicule.objects.all()
  
 class ProprieteArmeViewset(ReadOnlyModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
 
-    serializer_class = ProprieteArmeSerializers
+    model = ProprieteArme
+    serializer_classes = {
+        'list':ProprieteArmeListSerializers,
+        'retrieve':ProprieteArmeDetailSerializers,
+    }
+
+    default_serializer_class = ProprieteArmeListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
         return ProprieteArme.objects.all()
  
 class TypeDegatViewset(ReadOnlyModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
 
-    serializer_class = TypeDegatSerializers
+    model = TypeDegat
+    serializer_classes = {
+        'list':TypeDegatListSerializers,
+        'retrieve':TypeDegatDetailSerializers,
+    }
+
+    default_serializer_class = TypeDegatListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
         return TypeDegat.objects.all()
  
-class ClasseViewset(ReadOnlyModelViewSet):
-
-    serializer_class = ClasseSerializers
-
-    def get_queryset(self):
-        return Classe.objects.all()
- 
-class IncantationViewset(ReadOnlyModelViewSet):
-
-    serializer_class = IncantationSerializers
-
-    def get_queryset(self):
-        return Incantation.objects.all()
  
 class SousClasseViewset(ReadOnlyModelViewSet):
 
@@ -290,23 +394,58 @@ class SousClasseViewset(ReadOnlyModelViewSet):
         return SousClasse.objects.all()
  
 class NiveauxClasseViewset(ReadOnlyModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
 
-    serializer_class = NiveauxClasseSerializers
+    model = NiveauxClasse
+    serializer_classes = {
+        'list':NiveauxClasseListSerializers,
+        'retrieve':NiveauxClasseDetailSerializers,
+    }
+
+    default_serializer_class = NiveauxClasseListSerializers
+
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
         return NiveauxClasse.objects.all()
  
 class CapaciteViewset(ReadOnlyModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
 
-    serializer_class = CapaciteSerializers
+    model = Capacite
+    serializer_classes = {
+        'list':CapaciteListSerializers,
+        'retrieve':CapaciteDetailSerializers,
+    }
+
+    default_serializer_class = CapaciteListSerializers
+
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
         return Capacite.objects.all()
  
  
 class EcoleMagieViewset(ReadOnlyModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
 
-    serializer_class = EcoleMagieSerializers
+    model = EcoleMagie
+    serializer_classes = {
+        'list':EcoleMagieListSerializers,
+        'retrieve':EcoleMagieDetailSerializers,
+    }
+
+    default_serializer_class = SortListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
         return EcoleMagie.objects.all()
@@ -319,8 +458,19 @@ class EtatViewset(ReadOnlyModelViewSet):
         return Etat.objects.all()
  
 class CompetenceViewset(ReadOnlyModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = []
 
-    serializer_class = CompetenceSerializers
+    model = Competence
+    serializer_classes = {
+        'list':CompetenceListSerializers,
+        'retrieve':CompetenceDetailSerializers,
+    }
+
+    default_serializer_class = CompetenceListSerializers
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
         return Competence.objects.all()
