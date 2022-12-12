@@ -106,7 +106,7 @@ class ArmeDetailSerializers(BaseSerializers):
     
     class Meta:
         model = Arme
-        fields = ['index','nom','categorie_equipement','categorie_arme','type_portee','type','prix','poids','degat_une_main','degat_deux_mains','degat_distance','portee','propriete','special','url']
+        fields = ['index','nom','categorie_equipement','categorie_arme','portee','prix','poids','degat_une_main','degat_deux_mains','degat_distance','portee','propriete','special','url']
 
 
 class ArmureDetailSerializers(BaseSerializers):
