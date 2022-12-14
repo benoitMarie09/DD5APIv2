@@ -3,7 +3,7 @@ function interactiveCall() {
   if (content == "") {
     content = "classes/barde";
   }
-  fetch(`https://bouduben31.pythonanywhere.com/api/${content}/`)
+  fetch(`https://bouduben31.pythonanywhere.com/api/${content}/?format=json`)
     .then(async (data) => {
       if (data.ok) {
         data = await data.json();
