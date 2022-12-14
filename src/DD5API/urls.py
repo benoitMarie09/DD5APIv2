@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
-from data.save.views import *
-from rest_framework.routers import Route, DynamicRoute, SimpleRouter, DefaultRouter
+from data.views import *
+from rest_framework.routers import Route, DynamicRoute, DefaultRouter
 
 class CustomReadOnlyRouter(DefaultRouter):
     """

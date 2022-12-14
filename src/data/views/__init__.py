@@ -10,6 +10,6 @@ from data.views.historique import HistoriqueViewset
 from data.views.langue import LangueViewset
 from data.views.maitrise import MaitriseViewset
 from data.views.monstre import MonstreViewset, CapaciteMonstreViewset
-from data.views.race import RaceViewset, SousRaceViewset, Trait
+from data.views.race import RaceViewset, SousRaceViewset, TraitViewset
 from data.views.regle import RegleViewset, RegleSousSectionViewset
 from data.views.sort import SortViewset, EcoleMagieViewset
