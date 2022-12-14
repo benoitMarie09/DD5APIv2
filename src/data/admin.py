@@ -2,6 +2,76 @@ from django.contrib import admin
 from .models import *
 
 
+class QuantiteMonaie_inline(admin.TabularInline):
+    model = QuantiteMonaie
+    extra = 0
+
+
+class MonaieAdmin(admin.ModelAdmin):
+    inlines = (QuantiteMonaie_inline,)
+
+class QuantiteEquipement_inline(admin.TabularInline):
+    model = QuantiteEquipement
+
+
+class PackEquipementClasseAdmin(admin.ModelAdmin):
+    inlines = (QuantiteEquipement_inline,)
+
+class QuantiteEquipementAventurier_inline(admin.TabularInline):
+    model = QuantiteEquipementAventurier
+
+
+class EquipementAventurierAdmin(admin.ModelAdmin):
+    inlines = (QuantiteEquipementAventurier_inline, QuantiteMonaie_inline)
+
+class SacAdmin(admin.ModelAdmin):
+    inlines = (QuantiteEquipementAventurier_inline, QuantiteMonaie_inline)
+
+class EquipementAdmin(admin.ModelAdmin):
+    inlines = (QuantiteEquipement_inline, QuantiteMonaie_inline,)
+
+
+class HistoriqueAdmin(admin.ModelAdmin):
+    inlines = (QuantiteEquipement_inline, QuantiteMonaie_inline,)
+
+
+class ClasseAdmin(admin.ModelAdmin):
+    inlines = (QuantiteEquipement_inline,)
+
+class QuantiteSpecifique_inline(admin.TabularInline):
+    model = QuantiteSpecifique
+    extra = 0
+
+
+class SpecifiqueAdmin(admin.ModelAdmin):
+    inlines = (QuantiteSpecifique_inline,)
+
+
+class NiveauAdmin(admin.ModelAdmin):
+    inlines = (QuantiteSpecifique_inline,)
+
+class ValeurCaracteristique_inline(admin.TabularInline):
+    model = ValeurCaracteristique
+    extra = 0
+
+
+class CaracteristiqueAdmin(admin.ModelAdmin):
+    inlines = (ValeurCaracteristique_inline,)
+
+
+class RaceAdmin(admin.ModelAdmin):
+    inlines = (ValeurCaracteristique_inline,)
+
+
+class PrerequisCaracteristiqueAdmin(admin.ModelAdmin):
+    inlines = (ValeurCaracteristique_inline,)
+
+
+class MonstreAdmin(admin.ModelAdmin):
+    inlines = (ValeurCaracteristique_inline,)
+
+
+
 
 admin.site.register(Alignement)
 admin.site.register(Arme,EquipementAdmin)
@@ -35,8 +105,6 @@ admin.site.register(SousClasse)
 admin.site.register(SousRace, RaceAdmin)
 admin.site.register(Trait)
 admin.site.register(TypeDegat)
-
-
 admin.site.register(Niveau,NiveauAdmin)
 admin.site.register(ActionMonstre)
 admin.site.register(CapaciteHistorique)
@@ -71,8 +139,6 @@ admin.site.register(TraitHistorique)
 admin.site.register(Vehicule, EquipementAdmin)
 admin.site.register(Vitesse)
 admin.site.register(JetDeSauvegarde)
-
-
 admin.site.register(QuantiteEquipement)
 admin.site.register(QuantiteMonaie)
 admin.site.register(QuantiteSpecifique)

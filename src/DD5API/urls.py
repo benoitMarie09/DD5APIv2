@@ -1,10 +1,10 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
-from data.views import *
+from data.save.views import *
 from rest_framework.routers import Route, DynamicRoute, SimpleRouter, DefaultRouter
 
-class CustomReadOnlyRouter(SimpleRouter):
+class CustomReadOnlyRouter(DefaultRouter):
     """
     A router for read-only APIs, which doesn't use trailing slashes.
     """
@@ -35,7 +35,6 @@ class CustomReadOnlyRouter(SimpleRouter):
 router = DefaultRouter()
 customRouter = CustomReadOnlyRouter()
 router.register('alignements', AlignementViewset, basename='alignements')
-router.register('armures', ArmureViewset, basename='armures')
 router.register('capacites', CapaciteViewset, basename='capacites')
 router.register('capacites-monstres', CapaciteMonstreViewset, basename='capacites-monstres')
 router.register('caracteristiques', CaracteristiqueViewset, basename='caracteristiques')
@@ -43,7 +42,6 @@ router.register('categories-equipements', CategorieEquipementViewset, basename='
 router.register('classes', ClasseViewset, basename='classes')
 router.register('competences', CompetenceViewset, basename='competences')
 customRouter.register('classes', ClasseViewset, basename='classes')
-router.register('competences', CompetenceViewset, basename='competences')
 router.register('equipements', EquipementViewset, basename='equipements')
 router.register('equipements', EquipementViewset, basename='armes')
 router.register('equipements', EquipementViewset, basename='armures')
