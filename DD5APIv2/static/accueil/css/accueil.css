@@ -1,0 +1,40 @@
+:root {
+  --font-size: 1rem;
+}
+
+.light-mode {
+  --color: #222;
+  --bg-color: #f0f0f0;
+}
+
+.dark-mode {
+  --color: #f0f0f0;
+  --bg-color: #222;
+}
+body {
+  height: 100vh;
+}
+
+main {
+  height: 100%;
+  overflow: hidden;
+}
+.title {
+  height: 200px;
+  background-color: var(--bg-color);
+  color: var(--color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.center {
+  height: 300px;
+  margin-top: 100px;
+  color: var(--color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
