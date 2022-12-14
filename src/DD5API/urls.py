@@ -1,8 +1,13 @@
 from django.contrib import admin
+from django.conf.urls import (handler400, handler403, handler404, handler500)
 from django.urls import path, include
 from rest_framework import routers
 from data.views import *
+from accueil.views import accueil
 from rest_framework.routers import Route, DynamicRoute, DefaultRouter
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 
 class CustomReadOnlyRouter(DefaultRouter):
     """
@@ -30,7 +35,18 @@ class CustomReadOnlyRouter(DefaultRouter):
             initkwargs={}
         )
     ]
-
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Snippets API",
+      default_version='v1',
+      description="Test description",
+      terms_of_service="https://www.google.com/policies/terms/",
+      contact=openapi.Contact(email="contact@snippets.local"),
+      license=openapi.License(name="BSD License"),
+   ),
+   public=True,
+   permission_classes=[permissions.AllowAny],
+)
 
 router = DefaultRouter()
 customRouter = CustomReadOnlyRouter()
@@ -63,11 +79,14 @@ router.register('traits', TraitViewset, basename='traits')
 router.register('types-degats', TypeDegatViewset, basename='types-degats')
 router.register('sorts', SortViewset, basename='sorts')
 
-
+handler404 = error404
 
 
 urlpatterns = [
+    path('',accueil),
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include(router.urls)),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]

@@ -13,3 +13,4 @@ from data.views.monstre import MonstreViewset, CapaciteMonstreViewset
 from data.views.race import RaceViewset, SousRaceViewset, TraitViewset
 from data.views.regle import RegleViewset, RegleSousSectionViewset
 from data.views.sort import SortViewset, EcoleMagieViewset
+from data.views.error404 import error404

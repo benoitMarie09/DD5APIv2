@@ -1,0 +1,23 @@
+{% load static %}
+
+<link
+  rel="stylesheet"
+  href="{% static 'accueil/css/header.css' %}"
+  type="text/css" />
+<script src="{% static 'accueil/js/header.js' %}"></script>
+
+<nav class="navbar navbar--dark-mode" role="navigation">
+  <div>
+    <div id="navbar__logo">Logo</div>
+  </div>
+  <ul class="navbar__links">
+    <li class="navbar__link first"><a href="#">Accueil</a></li>
+    <li class="navbar__link second"><a href="/redoc">Documentation</a></li>
+    <li class="navbar__link third"><a href="/swagger">Swagger</a></li>
+    <li class="navbar__link four"><a href="/api">API</a></li>
+    <li class="navbar__link fifth"><a href="#">Contact</a></li>
+  </ul>
+  <button class="burger" type="button" onclick="toggleMenu()">
+    <span class="bar"></span>
+  </button>
+</nav>

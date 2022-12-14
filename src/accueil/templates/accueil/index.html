@@ -1,0 +1,33 @@
+{% extends 'accueil/base.html' %} 
+{% load static %} 
+{% block custom_static %}
+<link rel="stylesheet" href="{% static 'accueil/css/accueil.css' %}" />
+<script src="{% static 'accueil/js/accueil.js' %}"></script>
+{% endblock custom_static %} 
+
+{% block head_data %} 
+{% include 'accueil/header.html'%} 
+{% endblock head_data %} 
+
+{% block main_data %} 
+<div class="title dark-mode">
+  <h1>Donjons & Dragons 5e API fr</h1>
+  <h2>Une API en français de la 5ème édition de Donjons & Dragons</h2>
+</div>
+
+  <div class="center">
+    <h1> Test le immédiatement !</h1>
+    <div class="research">
+      <span>https:127.0.0.1:8000/api/</span>
+      <input id="interactive" type="text" placeholder="classes/barde">
+      <button class="button dark-mode" onclick="interactiveCall();return false;" >envoyer</button>
+    </div>
+  </div>
+  <div class="center">
+    <pre id="output" class="scrollable">
+    </pre>
+  </div>
+    
+
+</div>
+{% endblock main_data %}
