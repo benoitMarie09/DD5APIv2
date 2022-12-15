@@ -36,11 +36,12 @@ class CustomReadOnlyRouter(DefaultRouter):
     ]
 schema_view = get_schema_view(
    openapi.Info(
-      title="Snippets API",
+      title="D&D 5edition API fr",
       default_version='v1',
-      description="Test description",
-      terms_of_service="https://www.google.com/policies/terms/",
-      contact=openapi.Contact(email="contact@snippets.local"),
+      description="Une simple API de la 5ème édition du jeu Donjons & Dragons",
+      Code_source="https://github.com/benoitMarie09/DD5APIv2.git",
+      terms_of_service="https://www.google.com/policies/terms/",    
+      contact=openapi.Contact(email="benoit.marie09@proton.me"),
       license=openapi.License(name="BSD License"),
    ),
    public=True,
