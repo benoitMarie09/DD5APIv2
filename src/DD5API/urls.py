@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.conf.urls import (handler400, handler403, handler404, handler500)
 from django.urls import path, include
 from rest_framework import routers
 from data.views import *
@@ -79,7 +78,6 @@ router.register('traits', TraitViewset, basename='traits')
 router.register('types-degats', TypeDegatViewset, basename='types-degats')
 router.register('sorts', SortViewset, basename='sorts')
 
-handler404 = error404
 
 
 urlpatterns = [
