@@ -6,4 +6,6 @@ pytz==2022.6
 sqlparse==0.4.3
 django-filter
 django-model-utils
-django_rest_framework_redocsgit
+django_rest_framework_redocs
+drf-standardized-errors
+django-cors-headers
