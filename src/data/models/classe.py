@@ -63,7 +63,7 @@ class Capacite(BaseModel):
         'Classe', null=True, blank=True, related_name='capacite', on_delete=models.CASCADE)
     sous_classe = models.ForeignKey(
         'SousClasse', null=True, blank=True, related_name='capacite', on_delete=models.CASCADE)
-
+    option = models.ForeignKey('Option', blank = True, null = True, on_delete=models.CASCADE)
 
 class Niveau(BaseModel):
     niveau = models.IntegerField(default=1)
@@ -76,7 +76,7 @@ class Niveau(BaseModel):
     specifique_classe = models.ManyToManyField(
         'Specifique', blank=True, through='QuantiteSpecifique')
     class Meta:
-        ordering = ['classe','niveau',] 
+        ordering = ['classe'] 
     def get_absolute_url(self):
         return reverse('classes-niveau', args=[self.classe.all()[0].index,self.niveau])
 

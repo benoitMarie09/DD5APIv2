@@ -1,5 +1,6 @@
 from django.db import models
 from .base import BaseModel
+from django.utils.text import slugify
 
 
 class Option(BaseModel):
@@ -12,5 +13,8 @@ class Option(BaseModel):
     categories_equipements = models.ManyToManyField('CategorieEquipement',related_name='categories_equipements', blank=True)
     packs_equipements = models.ManyToManyField('PackEquipementClasse',related_name='categories_equipements', blank=True)
     sorts = models.ManyToManyField('Sort',related_name='sorts', blank=True)
+    capacites = models.ManyToManyField('Capacite',related_name='capacites_options', blank=True)
+       
+    
     def __str__(self):
         return f"{self.index}_{self.nombre_choix}_choix"
