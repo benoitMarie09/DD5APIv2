@@ -76,7 +76,7 @@ class Niveau(BaseModel):
     specifique_classe = models.ManyToManyField(
         'Specifique', blank=True, through='QuantiteSpecifique')
     class Meta:
-        ordering = ['classe'] 
+        ordering = ['classe','niveau'] 
     def get_absolute_url(self):
         return reverse('classes-niveau', args=[self.classe.all()[0].index,self.niveau])
 
