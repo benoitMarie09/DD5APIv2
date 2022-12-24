@@ -11,9 +11,6 @@
   --color: #f0f0f0;
   --bg-color: #222;
 }
-body {
-  height: 100vh;
-}
 
 main {
   height: 100%;
@@ -29,10 +26,17 @@ main {
   justify-content: center;
 }
 
+.subtitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
 .center {
   height: 300px;
   width: 100%;
-  margin-top: 50px;
+  margin: 25px auto;
   color: var(--color);
   display: flex;
   flex-direction: column;
@@ -41,13 +45,22 @@ main {
 }
 
 .research {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   font-size: large;
   height: 25px;
 }
 
-.research > input {
+.adress {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#interactive {
   font-size: large;
-  height: 25px;
+  height: 30px;
 }
 
 .button {
@@ -77,4 +90,7 @@ main {
   height: 600px;
   width: 70%;
   overflow-y: scroll;
+}
+
+@media only screen and (min-width: 600px) {
 }
