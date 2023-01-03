@@ -45,4 +45,4 @@ python3 manage.py runserver
 ### Je test immédiatement
 
 lien pour tester l'API avec documentation et swagger:  
-[lien API]:https://bouduben31.pythonanywhere.com
+[lien API]: https://bouduben31.pythonanywhere.com
