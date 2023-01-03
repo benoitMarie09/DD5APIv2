@@ -7,7 +7,7 @@ API en français pour le jeu de rôle Donjon Dragon édition 5
 cloner le repo :
 
 ```console
-git clone https://github.com/benoitMarie09/DD5API.git
+git clone https://github.com/benoitMarie09/DD5APIv2.git
 ```
 
 À la racine du depot DD5API :
