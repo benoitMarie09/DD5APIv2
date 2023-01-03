@@ -16,16 +16,15 @@ git clone https://github.com/benoitMarie09/DD5APIv2.git
 /DD5API$ ```console python3 -m venv .env ```
 
 
-DD5API$ Activer l'environement virtuel:
+Activer l'environement virtuel:
 
-```console
-/DD5API$ source .env/bin/activate
+
+/DD5API$ ```console source .env/bin/activate
 ```
 
-DD5API$ Installer les dépendances:
+```/DD5API$``` ```console Installer les dépendances:
 
-```console
-/DD5API$ pip install -r requirement.txt
+/DD5API$ ```console pip install -r requirement.txt
 ```
 
 ## Lancer l'API
