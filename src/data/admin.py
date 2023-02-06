@@ -70,6 +70,9 @@ class PrerequisCaracteristiqueAdmin(admin.ModelAdmin):
 class MonstreAdmin(admin.ModelAdmin):
     inlines = (ValeurCaracteristique_inline,)
 
+class PJAdmin(admin.ModelAdmin):
+    inlines = (ValeurCaracteristique_inline, QuantiteEquipement_inline,)
+
 
 
 
@@ -143,6 +146,7 @@ admin.site.register(QuantiteEquipement)
 admin.site.register(QuantiteMonaie)
 admin.site.register(QuantiteSpecifique)
 admin.site.register(ValeurCaracteristique)
+admin.site.register(PJ, PJAdmin)
 
 
 

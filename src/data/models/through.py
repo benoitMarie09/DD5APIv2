@@ -25,6 +25,8 @@ class QuantiteEquipement(models.Model):
         'Classe', related_name='quantite_equipement', blank=True, null=True, on_delete=models.CASCADE)
     pack_equipement = models.ForeignKey(
         'PackEquipementClasse', related_name='contenu_pack', blank=True, null=True, on_delete=models.CASCADE)
+    pj = models.ForeignKey(
+        'PJ', related_name='quantite_equipement', null=True, blank=True, on_delete=models.CASCADE)
     def __str__(self):
         return f"{self.quantite}"
 
@@ -59,7 +61,22 @@ class ValeurCaracteristique(models.Model):
         'PrerequisCaracteristique', related_name='valeur_caract', blank=True, null=True, on_delete=models.CASCADE)
     monstre = models.ForeignKey(
         'Monstre', related_name='valeur_caract1', null=True, blank=True, on_delete=models.CASCADE)
+    pj = models.ForeignKey(
+        'PJ', related_name='valeur_caract', null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return '{}: +{}'.format(self.caracteristique, self.valeur)
 
+class NiveauClasse(models.Model):
+    niveau = models.IntegerField(default=1)
+    pj = models.ForeignKey(
+        'PJ', blank=True, null=True, on_delete=models.CASCADE)
+    classe = models.ForeignKey(
+        'Classe', blank=True, null=True, on_delete=models.CASCADE)
+    sous_classe = models.ForeignKey(
+        'SousClasse', blank=True, null=True, on_delete=models.CASCADE)
+    def __str__(self):
+        if sous_classe:
+            return '{}({}) nv:{}'.format(self.classe,self.sous_classe, self.niveau)
+        else:
+            return '{} nv:{}'.format(self.classe, self.niveau)

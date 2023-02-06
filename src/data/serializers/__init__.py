@@ -47,3 +47,6 @@ from .regle.list import RegleSerializers, RegleSousSectionSerializers
 
 from .sort.list import SortListSerializers, EcoleMagieListSerializers
 from .sort.detail import SortDetailSerializers, EcoleMagieDetailSerializers
+
+from .pj.list import PJListSerializers
+from .pj.detail import PJDetailSerializers

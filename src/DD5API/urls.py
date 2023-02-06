@@ -78,6 +78,7 @@ router.register('sous-races', SousRaceViewset, basename='sous-races')
 router.register('traits', TraitViewset, basename='traits')
 router.register('types-degats', TypeDegatViewset, basename='types-degats')
 router.register('sorts', SortViewset, basename='sorts')
+router.register('PJ', PJViewset, basename='pjs')
 
 
 
