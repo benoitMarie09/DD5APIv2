@@ -54,6 +54,9 @@ class ValeurCaracteristique_inline(admin.TabularInline):
     model = ValeurCaracteristique
     extra = 0
 
+class NiveauClasse_inline(admin.TabularInline):
+    model = NiveauClasse
+    extra = 0
 
 class CaracteristiqueAdmin(admin.ModelAdmin):
     inlines = (ValeurCaracteristique_inline,)
@@ -71,7 +74,7 @@ class MonstreAdmin(admin.ModelAdmin):
     inlines = (ValeurCaracteristique_inline,)
 
 class PJAdmin(admin.ModelAdmin):
-    inlines = (ValeurCaracteristique_inline, QuantiteEquipement_inline,)
+    inlines = (ValeurCaracteristique_inline, QuantiteEquipement_inline, NiveauClasse_inline)
 
 
 

@@ -14,5 +14,5 @@ from data.models.option import Option
 from data.models.race import Race, SousRace, Taille, Trait
 from data.models.regle import Regle, RegleSousSection
 from data.models.sort import Sort, EcoleMagie, Composante
-from data.models.through import QuantiteMonaie, QuantiteEquipement, QuantiteEquipementAventurier, QuantiteSpecifique, ValeurCaracteristique
+from data.models.through import NiveauClasse, QuantiteMonaie, QuantiteEquipement, QuantiteEquipementAventurier, QuantiteSpecifique, ValeurCaracteristique
 from data.models.pj import PJ

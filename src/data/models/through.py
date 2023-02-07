@@ -76,7 +76,7 @@ class NiveauClasse(models.Model):
     sous_classe = models.ForeignKey(
         'SousClasse', blank=True, null=True, on_delete=models.CASCADE)
     def __str__(self):
-        if sous_classe:
+        if self.sous_classe:
             return '{}({}) nv:{}'.format(self.classe,self.sous_classe, self.niveau)
         else:
             return '{} nv:{}'.format(self.classe, self.niveau)

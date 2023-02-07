@@ -2,15 +2,17 @@ from rest_framework import serializers
 from data.models import PJ, Race
 from data.serializers.base.base import BaseSerializers
 from data.serializers.race.list import RaceListSerializers
+from data.serializers.classe.list import ClasseListSerializers
 from data.serializers.caracteristique.list import CaracteristiqueListSerializers
 
 class PJDetailSerializers(BaseSerializers):
     
     race = RaceListSerializers()
+    classes = ClasseListSerializers(many=True)
 
     class Meta:
         model = PJ
-        fields = ["index","nom","desc","race",]
+        fields = ["index","nom","desc","race","classes"]
         depth = 2
     
     def create(self, validated_data):
